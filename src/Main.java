@@ -1,5 +1,4 @@
 
-import controllers.HomePageController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,20 +13,10 @@ public class Main extends Application
    @Override
    public void start(final Stage stage) throws Exception
    {
-      // Initialize Controllers
-      HomePageController homePage = new HomePageController();
-
-      // Initialize the Scene
-      Scene scene = new Scene(homePage.getPane());
-
-      // Set Attributes of Application
+      Parent root = FXMLLoader.load(getClass().getResource("fxml/Hypermedia.fxml"));
+      Scene scene = new Scene(root);
       stage.setTitle("Hypermedia Application");
       stage.setScene(scene);
-
-      // Add CSS
-      scene.getStylesheets().add("/css/common.css");
-
-      // Display Application
       stage.show();
    }
 
