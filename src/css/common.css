@@ -1,0 +1,20 @@
+/**
+ * common.css - Common CSS StyleSheet for the Hypermedia Applciation
+ */
+
+/* Root Colors for System */
+.root
+{
+   
+}
+
+.contentPane
+{
+   -fx-background-color: #36454f;
+}
+
+.videoPane
+{
+   -fx-background-color:  #d3d3d3;
+}
+
