@@ -15,7 +15,7 @@ public class Main extends Application
    public void start(final Stage stage) throws Exception
    {
       // Initialize Controllers
-      HomePageController homePage = new HomePageController();
+      HomePageController homePage = new HomePageController(stage);
 
       // Initialize the Scene
       Scene scene = new Scene(homePage.getPane());
