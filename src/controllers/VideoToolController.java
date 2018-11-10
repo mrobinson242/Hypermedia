@@ -1,22 +1,17 @@
 package controllers;
 
-import java.io.IOException;
+import java.io.File;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Slider;
-import javafx.scene.layout.Pane;
 import javafx.scene.media.MediaView;
 
 /**
  * VideoToolController - Controls the User Interaction on the
  *                       HyperLinking Video Tool Page
  */
-public class VideoToolController extends Pane
+public class VideoToolController extends AbstractController
 {
-   /** FXML filename associated with this Controller */
-   private static final String FXML_NAME = "VideoTool.fxml";
-
    @FXML
    private MediaView _primaryVideoView;
 
@@ -29,39 +24,50 @@ public class VideoToolController extends Pane
    @FXML
    private Slider _secondaryVideoSlider;
 
+   /** FXML filename associated with this Controller */
+   private static final String FXML_NAME = "VideoTool.fxml";
+
+   /** Primary Video File */
+   private File _primaryVideo;
+
+   /** Secondary Video File */
+   private File _secondaryVideo;
+
    /**
     * Constructor
     */
    public VideoToolController()
    {
-      // Initialize String Builder
-      StringBuilder builder = new StringBuilder();
-
-      // Create Path to FXML File
-      builder.append("../fxml/");
-      builder.append(FXML_NAME);
-      String fxmlPath = builder.toString();
-
-      // Create Path to FXML File
-      FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-      loader.setController(this);
-      loader.setRoot(this);
-      try 
-      {
-         loader.load();
-      } 
-      catch (IOException e) 
-      {
-         e.printStackTrace();
-      }
+      super(FXML_NAME);
 
       // Initialize Video Views to Hidden
       _primaryVideoView.setVisible(false);
       _secondaryVideoView.setVisible(false);
+
+      // Initialize Video Files to be null
+      _primaryVideo = new File("");
+      _secondaryVideo = new File("");
    }
-   
-   public Pane getPane()
+
+   /**
+    * setPrimaryVideo - Sets the Current Primary Video
+    *
+    * @param file - The Primary Video
+    */
+   public void setPrimaryVideo(final File primaryVideo)
    {
-      return this;
+      // Update the Primary Video
+      _primaryVideo = primaryVideo;
+   }
+
+   /**
+    * setSecondaryVideo - Sets the Current Secondary Video
+    *
+    * @param file - The Secondary Video
+    */
+   public void setSecondaryVideo(final File secondaryVideo)
+   {
+      // Update the Secondary Video
+      _secondaryVideo = secondaryVideo;
    }
 }
