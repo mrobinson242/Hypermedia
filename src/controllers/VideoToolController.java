@@ -9,6 +9,7 @@ import data.Point;
 import dialogs.LinkCreationDialog;
 import dialogs.interfaces.IDialog;
 import enums.EFontAwesome;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -19,9 +20,12 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import util.PolygonUtil;
 
 /**
@@ -65,6 +69,12 @@ public class VideoToolController extends AbstractController
 
    /** Secondary Video File */
    private File _secondaryVideo;
+
+   /** Primary Video Media Player */
+   private MediaPlayer _mediaPlayer1;
+
+   /** Secondary Video Media Player */
+   private MediaPlayer _mediaPlayer2;
 
    /** Dialog Window for Link Creation */
    private IDialog _linkCreationDialog;
@@ -131,7 +141,7 @@ public class VideoToolController extends AbstractController
               boolean isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices());
 
               // TODO: Remove Debug Stmt
-              // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
+              System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
            }
         }
       });
@@ -146,6 +156,31 @@ public class VideoToolController extends AbstractController
    {
       // Update the Primary Video
       _primaryVideo = primaryVideo;
+      _primaryVideoView.setVisible(true);
+
+      try 
+      {
+         // Initialize Media
+         final Media primaryMedia = new Media(_primaryVideo.toURI().toURL().toString());
+
+         // Initialize the Primary Media Player
+         _mediaPlayer1 = new MediaPlayer(primaryMedia);
+
+         // Attach the Media Player to the Media View
+         _primaryVideoView.setMediaPlayer(_mediaPlayer1);
+      }
+      catch (final Exception e)
+      {
+         // Log Error
+         e.printStackTrace();
+      }
+
+      // OffLoad to the Display Thread
+      Platform.runLater(() ->
+      {
+         // Update the Primary Slider
+         setPrimarySlider();
+      });
    }
 
    /**
@@ -157,6 +192,24 @@ public class VideoToolController extends AbstractController
    {
       // Update the Secondary Video
       _secondaryVideo = secondaryVideo;
+      _secondaryVideoView.setVisible(true);
+
+      try 
+      {
+         // Create a Media Object
+         final Media secondaryMedia = new Media(_secondaryVideo.toURI().toURL().toString());
+
+         // Initialize the Secondary Media Player
+         _mediaPlayer2 = new MediaPlayer(secondaryMedia);
+
+         // Attach the Media Playe rto the Media View
+         _secondaryVideoView.setMediaPlayer(_mediaPlayer2);
+      }
+      catch (final Exception e)
+      {
+         // Log Error
+         e.printStackTrace();
+      }
    }
 
    /**
@@ -261,7 +314,7 @@ public class VideoToolController extends AbstractController
                // Update Color of Link's Bounding Box to be Selected Color
                selectedLink.getBoundingBox().setStroke(Color.BLUE);
             }
-            
+
             for(Link link : _selectLinkView.getItems())
             {
                // If link no longer selected
@@ -271,6 +324,31 @@ public class VideoToolController extends AbstractController
                   link.getBoundingBox().setStroke(Color.FORESTGREEN);
                }
             }
+         }
+      });
+   }
+
+   /**
+    * setPrimarySlider - Updates the Primary Slider based on the Primary Video
+    */
+   private void setPrimarySlider()
+   {
+     // Update the Primary Video
+      _primaryVideoSlider.setMin(1);
+      _primaryVideoSlider.setMax(9000);
+      _primaryVideoSlider.setValue(1);
+      _primaryVideoSlider.setMajorTickUnit(1);
+      _primaryVideoSlider.setSnapToTicks(true);
+
+      // Slider Change Listener
+      _primaryVideoSlider.valueProperty().addListener(new ChangeListener<Number>()
+      {
+         public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val)
+         {
+            int val = (int) _primaryVideoSlider.getValue();
+            int start = (int) Math.round((100./3) * val);
+             System.out.println(start);
+            _mediaPlayer1.seek(new Duration(start));
          }
       });
    }
