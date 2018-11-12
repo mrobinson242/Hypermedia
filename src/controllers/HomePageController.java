@@ -27,11 +27,17 @@ public class HomePageController extends AbstractController
    private MenuItem _importSecondaryVideoButton;
 
    @FXML
+   private MenuItem _createLinkItem;
+
+   @FXML
+   private MenuItem _exitItem;
+
+   @FXML
    private ToggleButton _videoToolButton;
 
    @FXML
    private ToggleButton _videoPlayerButton;
-   
+
    @FXML
    private Stage _stage;
 
@@ -49,16 +55,18 @@ public class HomePageController extends AbstractController
 
    /**
     * Constructor
+    * 
+    * @param primaryStage - The primary stage of the application
     */
-   public HomePageController(final Stage stage)
+   public HomePageController(final Stage primaryStage)
    {
       super(FXML_NAME);
 
-      // Set Stage
-      _stage = stage;
+      // Initialize Stage
+      _stage = primaryStage;
 
       // Initialize Controllers
-      _videoToolController = new VideoToolController();
+      _videoToolController = new VideoToolController(primaryStage);
       _videoPlayerController = new VideoPlayerController();
 
       // Default to Video Tool Button Selected
@@ -67,14 +75,18 @@ public class HomePageController extends AbstractController
       // Set Video Tool Pane First
       _contentPane.getChildren().add(_videoToolController.getPane());
 
-      // Init the File Chooser
+      // Initialize the File Chooser
       initFileChooser();
 
       // Handle Button Listeners
       handleVideoToolButtonSelection();
       handleVideoPlayerButtonSelection();
+
+      // Handle Menu Item Listeners
       importPrimaryVideoSelection();
       importSecondaryVideoSelection();
+      createLinkSelection();
+      exitSelection();
    }
 
    /**
@@ -91,6 +103,10 @@ public class HomePageController extends AbstractController
 
          // Add Video Tool to Content Pane
          _contentPane.getChildren().add(_videoToolController.getPane());
+
+         // DeSelect Video Player Button
+         _videoToolButton.setSelected(true);
+         _videoPlayerButton.setSelected(false);
       });
    }
 
@@ -105,6 +121,39 @@ public class HomePageController extends AbstractController
       {
          // Clear Content Pane
          _contentPane.getChildren().clear();
+
+         // Add Video Tool to Content Pane
+         _contentPane.getChildren().add(_videoPlayerController.getPane());
+
+         // DeSelect Video Tool Button
+         _videoToolButton.setSelected(false);
+         _videoPlayerButton.setSelected(true);
+      });
+   }
+
+   /**
+    * createLinkSelection - Handles the Selection of
+    *                       the Create Link Menu Item
+    */
+   private void createLinkSelection()
+   {
+      // Process Selection
+      _createLinkItem.setOnAction(event ->
+      {
+         // TODO: Implement
+      });
+   }
+
+   /**
+    * exitSelection - Handles the Selection of the Exit
+    *                 Menu Item
+    */
+   private void exitSelection()
+   {
+      // Process Selection of Exit Menu Item
+      _exitItem.setOnAction(event ->
+      {
+         System.exit(0);
       });
    }
 

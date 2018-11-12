@@ -5,16 +5,217 @@
 /* Root Colors for System */
 .root
 {
-   
+   /** Define Common Colors */
+   mineShaft: #2F2F2F;     /** Darkest Gray */
+   tundora: #454545;       /** Dark Gray */
+   boulder: #787878;       /** Medium Gray */
+   silverChalice: #B2B2B2; /** Light Gray */
+   dodgerBlue: #3189F6;    /** Blue */
+
+   /** Define Common Color Usage */
+   textColor: silverChalice;
 }
 
+.label
+{
+   -fx-text-fill: textColor;
+}
+
+/** CSS for Video Tool/Player Pane */
 .contentPane
 {
-   -fx-background-color: #36454f;
+   -fx-background-color: mineShaft;
 }
 
+/** CSS for Video View Panes */
 .videoPane
 {
-   -fx-background-color:  #d3d3d3;
+   -fx-background-color:  tundora;
+}
+
+/** CSS for Menu Bar Pane */
+.menuBarPane
+{
+   -fx-background-color: tundora;
+   -fx-text-fill: textColor;
+}
+
+/** CSS for Menu Label */
+.menu .label
+{
+   -fx-text-fill: textColor;
+}
+
+/** CSS for Menu's Context Menu */
+.menu .context-menu
+{
+ -fx-background-color:  tundora;
+}
+
+/** CSS for Menu Item in Menu's Context Menu */
+.menu-item
+{
+   -fx-background-color:  tundora;
+}
+
+/** CSS for Hovering over Menu Item */
+.menu-item:hover
+{
+   -fx-opacity: 0.5;
+   -fx-background-color: silverChalice;
+}
+
+/** CSS for Hover over Menu Item Label */
+.menu-item:hover .label
+{
+   -fx-text-fill: tundora;
+}
+
+/** CSS for Vertical Scroll Bar */
+.scroll-bar:vertical
+{
+   -fx-background-color: tundora;
+}
+
+.scroll-bar:vertical .thumb
+{
+   -fx-background-color: boulder;
+   -fx-background-radius: 10 10 10 10;
+}
+
+.scroll-bar:vertical .increment-button:hover,
+.scroll-bar:vertical .decrement-button:hover
+{
+   -fx-opacity: 0.5;
+   -fx-background-color: silverChalice;
+}
+
+
+/** CSS for Tab Bar Pane */
+.tabPane
+{
+   -fx-background-color: tundora;
+}
+
+/** CSS for Tab Buttons */
+.tabButton
+{
+   -fx-border-radius: 0;
+   -fx-background-color: mineShaft;
+   -fx-text-fill: textColor;
+}
+
+.tabButton:selected
+{
+   -fx-border-radius: 0px;
+   -fx-border-color:  mineShaft mineShaft silverChalice mineShaft;
+}
+
+/** CSS for Dialog Pane */
+.dialogPane
+{
+   -fx-background-color: mineShaft;
+}
+
+/** CSS for Dialog Text Field */
+.dialogTextField
+{
+   -fx-background-color: tundora;
+   -fx-text-fill: textColor;
+}
+
+/** CSS for Dialog Button */
+.dialogButton
+{
+   -fx-text-fill: textColor;
+   -fx-background-color: tundora;
+   -fx-background-radius: 10 10 10 10;
+   -fx-border-radius: 10 10 10 10;
+   -fx-border-color: silverChalice boulder boulder silverChalice;
+}
+
+/** CSS for Dialog Button Disabled */
+.dialogButton:disabled
+{
+   -fx-border-color:  tundora tundora tundora tundora;
+}
+
+/** CSS for Dialog Button Pressed */
+.dialogButton:pressed
+{
+   -fx-border-color:  boulder silverChalice silverChalice boulder;
+}
+
+/** CSS for Labels in Dialog */
+.dialogLabel
+{
+   -fx-text-fill: textColor
+}
+
+.selectLinkView
+{
+   -fx-background-color: tundora;
+   -fx-border-color:  silverChalice silverChalice silverChalice silverChalice;
+}
+
+.selectLinkView .list-cell:odd
+{
+   -fx-text-fill: textColor;
+}
+
+.selectLinkView .list-cell:even
+{
+   -fx-text-fill: textColor;
+   -fx-background-color: mineShaft;
+}
+
+.selectLinkView .list-cell:filled:selected
+{
+   -fx-border-color: dodgerBlue dodgerBlue dodgerBlue dodgerBlue;
+}
+
+.list-cell:odd
+{
+   -fx-background-color: tundora;
+}
+
+.list-cell:even
+{
+   -fx-background-color: tundora;
+}
+
+/** CSS for Slider Track */
+.frameSlider .track
+{
+   -fx-background-color: tundora;
+}
+
+/** CSS for Slider Thumb */
+.frameSlider .thumb
+{
+   -fx-background-color: boulder;
+}
+
+/** CSS for Font Awesome Button */
+.awesomeButton
+{
+    -fx-font-family: FontAwesome;
+   -fx-background-color: tundora;
+   -fx-text-fill: textColor;
+   -fx-font-size: 30px;
+   -fx-border-color: silverChalice boulder boulder silverChalice;
+}
+
+/** CSS for Pressed Font Awesome Button */
+.awesomeButton:pressed
+{
+   -fx-border-color:  boulder silverChalice silverChalice boulder;
+}
+
+/** CSS for Separator */
+.separator:vertical .line
+{
+   -fx-border-color: silverChalice;
+   -fx-border-width: 1;
 }
 

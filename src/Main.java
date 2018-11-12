@@ -1,7 +1,10 @@
 
+import java.io.InputStream;
+
 import controllers.HomePageController;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
@@ -12,6 +15,10 @@ public class Main extends Application
    @Override
    public void start(final Stage stage) throws Exception
    {
+      // Load Font Awesome
+      InputStream font = Main.class.getResourceAsStream("/resources/fontawesome-webfont.ttf");
+      Font fontAwesome = Font.loadFont(font, 10);
+
       // Initialize Controllers
       HomePageController homePage = new HomePageController(stage);
 

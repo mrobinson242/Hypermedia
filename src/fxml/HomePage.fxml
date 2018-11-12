@@ -8,26 +8,26 @@
 
 <fx:root prefHeight="600.0" type="Pane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <MenuBar fx:id="_menuBar" prefHeight="30.0" prefWidth="1200.0">
+      <MenuBar fx:id="_menuBar" prefHeight="30.0" prefWidth="1200.0" styleClass="menuBarPane">
          <menus>
-            <Menu fx:id="_fileMenu" mnemonicParsing="false" text="File">
+            <Menu fx:id="_fileMenu" mnemonicParsing="false" styleClass="menu" text="File">
                <items>
                   <MenuItem fx:id="_importPrimaryVideoButton" mnemonicParsing="false" text="Import Primary Video" />
                   <MenuItem fx:id="_importSecondaryVideoButton" mnemonicParsing="false" text="Import Secondary Video" />
+                  <MenuItem fx:id="_exitItem" mnemonicParsing="false" text="Exit" />
                </items>
             </Menu>
-            <Menu mnemonicParsing="false" text="Edit" />
-            <Menu mnemonicParsing="false" text="Help">
+            <Menu mnemonicParsing="false" text="Option">
                <items>
-                  <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
-               </items>
-            </Menu>
+                  <MenuItem fx:id="_createLinkItem" mnemonicParsing="false" text="Create Link" />
+               </items></Menu>
+            <Menu mnemonicParsing="false" text="Help" />
          </menus>
       </MenuBar>
-      <Pane layoutY="30.0" prefHeight="50.0" prefWidth="1200.0">
+      <Pane fx:id="_tabPane" layoutY="30.0" prefHeight="50.0" prefWidth="1200.0" styleClass="tabPane">
          <children>
-            <ToggleButton fx:id="_videoToolButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" text="Hyperlink Video Tool" textAlignment="CENTER" wrapText="true" />
-            <ToggleButton fx:id="_videoPlayerButton" layoutX="90.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" text="Interactive Video Player" textAlignment="CENTER" wrapText="true" />
+            <ToggleButton fx:id="_videoToolButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="tabButton" text="Hyperlink Video Tool" textAlignment="CENTER" wrapText="true" />
+            <ToggleButton fx:id="_videoPlayerButton" layoutX="90.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="tabButton" text="Interactive Video Player" textAlignment="CENTER" wrapText="true" />
          </children>
       </Pane>
       <Pane fx:id="_contentPane" layoutY="80.0" prefHeight="520.0" prefWidth="1200.0" styleClass="contentPane" />
