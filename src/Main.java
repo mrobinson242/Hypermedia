@@ -1,5 +1,6 @@
 
 import controllers.HomePageController;
+import controllers.VideoToolController;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

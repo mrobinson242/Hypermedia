@@ -10,6 +10,8 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 
 /**
  * HomePageController - Controls the UI on the Default Home Page
@@ -47,6 +49,8 @@ public class HomePageController extends AbstractController
    /** Primary Video File Chooser */
    private FileChooser _fileChooser;
 
+
+
    /**
     * Constructor
     */
@@ -75,6 +79,8 @@ public class HomePageController extends AbstractController
       handleVideoPlayerButtonSelection();
       importPrimaryVideoSelection();
       importSecondaryVideoSelection();
+
+
    }
 
    /**
@@ -126,6 +132,9 @@ public class HomePageController extends AbstractController
 
          // Update Video Tool with Selected File
          _videoToolController.setPrimaryVideo(primaryVideo);
+         
+
+         
       });
    }
 
@@ -147,6 +156,8 @@ public class HomePageController extends AbstractController
 
          // Update Video Tool with Selected File
          _videoToolController.setSecondaryVideo(secondaryVideo);
+
+
       });
    }
 
@@ -167,7 +178,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/videos");
+      sb.append("/videos");
 
       // Set Path to Video Files
       final File videoFile = new File(sb.toString());
