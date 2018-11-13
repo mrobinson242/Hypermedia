@@ -12,11 +12,11 @@
       <Button fx:id="_playButton" layoutX="1005.0" layoutY="65.0" mnemonicParsing="false" prefHeight="90.0" prefWidth="90.0" styleClass="awesomeButton" text="Play Button" />
       <Button fx:id="_pauseButton" layoutX="1005.0" layoutY="220.0" mnemonicParsing="false" prefHeight="90.0" prefWidth="90.0" styleClass="awesomeButton" text="Pause Button" />
       <Button fx:id="_stopButton" layoutX="1005.0" layoutY="375.0" mnemonicParsing="false" prefHeight="90.0" prefWidth="90.0" styleClass="awesomeButton" text="Stop Button" />
-      <Pane layoutX="112.5" layoutY="20.0" prefHeight="450.0" prefWidth="675.0" styleClass="videoPane">
+      <Pane layoutX="186.0" layoutY="30.0" prefHeight="432.0" prefWidth="528.0" styleClass="videoPane">
          <children>
-            <MediaView fitHeight="450.0" fitWidth="675.0" />
+            <MediaView fitHeight="432.0" fitWidth="528.0" />
          </children>
       </Pane>
-      <Slider layoutX="112.5" layoutY="475.0" prefWidth="675.0" styleClass="frameSlider" />
+      <Slider layoutX="186.0" layoutY="475.0" prefWidth="528.0" styleClass="frameSlider" />
    </children>
 </fx:root>

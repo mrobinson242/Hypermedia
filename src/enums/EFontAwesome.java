@@ -5,14 +5,17 @@ package enums;
  */
 public enum EFontAwesome
 {
-   LINK("\uf0c1"),
-   PAUSE("\uf04c"),
-   PLAY("\uf04b"),
-   PLAY_CIRCLE("\uf144"),
-   SAVE("\uf0c7"),
-   STOP("\uf04d"),
-   STOP_CIRCLE("\uf28d"),
-   TRASH("\uf1f8");
+   FILE_CODE("\uf1c9"),    // Regular
+   FILE_VIDEO("\uf1c8"),   // Regular
+   LINK("\uf0c1"),         // Regular
+   NEW_FILE("\uf15b"),     // Regular
+   PAUSE("\uf04c"),        // Regular
+   PLAY("\uf04b"),         // Regular
+   PLAY_CIRCLE("\uf144"),  // Regular
+   SAVE("\uf0c7"),         // Regular
+   STOP("\uf04d"),         // Regular
+   STOP_CIRCLE("\uf28d"),  // Regular
+   TRASH("\uf1f8");        // Regular
 
    /** Unicode Value of Font Awesome Icon */
    private String _unicode;

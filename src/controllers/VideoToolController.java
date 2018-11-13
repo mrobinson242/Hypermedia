@@ -50,10 +50,19 @@ public class VideoToolController extends AbstractController
    private Slider _secondaryVideoSlider;
 
    @FXML
+   private Button _importFileButton;
+
+   @FXML
+   private Button _importVideoButton;
+
+   @FXML
+   private Button _newFileButton;
+
+   @FXML
    private Button _saveButton;
 
    @FXML
-   private Button _linkButton;
+   private Button _createLinkButton;
 
    @FXML
    private Button _deleteLinkButton;
@@ -98,7 +107,7 @@ public class VideoToolController extends AbstractController
       _primaryVideoView.setVisible(false);
       _secondaryVideoView.setVisible(false);
 
-      // Initialize List of Hyperlinks
+      // Initialize List of HyperLinks
       _linkList = new ArrayList<Link>();
 
       // Initialize Polygon Utility Helper();
@@ -112,14 +121,20 @@ public class VideoToolController extends AbstractController
       _secondaryVideo = new File("");
 
       // Update Icons of Buttons
-      _linkButton.setText(EFontAwesome.LINK.getCode());
+      _importFileButton.setText(EFontAwesome.FILE_CODE.getCode());
+      _importVideoButton.setText(EFontAwesome.FILE_VIDEO.getCode());
+      _newFileButton.setText(EFontAwesome.NEW_FILE.getCode());
+      _createLinkButton.setText(EFontAwesome.LINK.getCode());
       _saveButton.setText(EFontAwesome.SAVE.getCode());
       _deleteLinkButton.setText(EFontAwesome.TRASH.getCode());
 
       // Initialize Button States
+      _newFileButton.setDisable(true);
       _deleteLinkButton.setDisable(true);
+      //_createLinkButton.setDisable(true);
 
       // Button Listeners
+      handleImportVideoButton();
       handleCreateLinkButton();
       handleDeleteLinkButton();
 
@@ -230,13 +245,25 @@ public class VideoToolController extends AbstractController
    }
 
    /**
+    * handleImportVideoButton - Handles the Selection of the
+    *                           Import Video Button
+    */
+   private void handleImportVideoButton()
+   {
+      _importVideoButton.setOnAction(event ->
+      {
+         // TODO - Implement
+      });
+   }
+
+   /**
     * handleLinkButtonSelection - Handles the Selection of the
     *                             Create Link Button
     */
    private void handleCreateLinkButton()
    {
       // Process Selection of Create Link Button
-      _linkButton.setOnAction(event ->
+      _createLinkButton.setOnAction(event ->
       {
          // Show the Link Creation Dialog
          _linkCreationDialog.showDialog();

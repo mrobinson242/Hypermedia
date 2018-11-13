@@ -196,15 +196,27 @@
    -fx-background-color: boulder;
 }
 
-/** CSS for Font Awesome Button */
+/** CSS for Regualar Font Awesome Button */
 .awesomeButton
 {
-    -fx-font-family: FontAwesome;
+   -fx-font-family: FontAwesome;
    -fx-background-color: tundora;
    -fx-text-fill: textColor;
    -fx-font-size: 30px;
    -fx-border-color: silverChalice boulder boulder silverChalice;
 }
+
+/** CSS for Solid Font Awesome Button */
+.solidAwesomeButton
+{
+   -fx-font-family: FontAwesome 5 Free Solid;
+   -fx-font-weight: bold;
+   -fx-background-color: green;
+   -fx-text-fill: textColor;
+   -fx-font-size: 30px;
+   -fx-border-color: silverChalice boulder boulder silverChalice;
+}
+
 
 /** CSS for Pressed Font Awesome Button */
 .awesomeButton:pressed
