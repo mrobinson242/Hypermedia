@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.Pane?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="90.0" prefWidth="490.0" styleClass="dialogPane" type="Pane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Button fx:id="_importPrimaryVideoButton" layoutX="40.0" layoutY="20.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="50.0" prefWidth="110.0" styleClass="dialogButton" text="Import Primary Video" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_importSecondaryVideoButton" layoutX="190.0" layoutY="20.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="50.0" prefWidth="110.0" styleClass="dialogButton" text="Import Secondary Video" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_cancelButton" layoutX="340.0" layoutY="20.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="50.0" prefWidth="110.0" styleClass="dialogButton" text="Cancel" textAlignment="CENTER" wrapText="true" />
+   </children>
+</fx:root>

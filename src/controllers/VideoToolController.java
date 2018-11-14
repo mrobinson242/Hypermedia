@@ -1,23 +1,28 @@
 package controllers;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import data.Link;
 import data.Point;
+import dialogs.ImportVideoDialog;
 import dialogs.LinkCreationDialog;
 import dialogs.interfaces.IDialog;
 import enums.EFontAwesome;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
@@ -50,6 +55,12 @@ public class VideoToolController extends AbstractController
    private Slider _secondaryVideoSlider;
 
    @FXML
+   private ProgressBar _primaryVideoProgressBar;
+
+   @FXML
+   private ProgressBar _secondaryVideoProgressBar;
+
+   @FXML
    private Button _importFileButton;
 
    @FXML
@@ -68,10 +79,28 @@ public class VideoToolController extends AbstractController
    private Button _deleteLinkButton;
 
    @FXML
+   private Label _primaryVideoFrameLabel;
+
+   @FXML
+   private Label _primaryVideoFrame;
+
+   @FXML
+   private Label _secondaryVideoFrameLabel;
+
+   @FXML
+   private Label _secondaryVideoFrame;
+
+   @FXML
    private ListView<Link> _selectLinkView;
 
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "VideoTool.fxml";
+   
+   /** Frame Rate of Imported Videos */
+   private static final int FPS = 30;
+
+   /** Home Page Controller */
+   private HomePageController _homePageController;
 
    /** Primary Video File */
    private File _primaryVideo;
@@ -79,14 +108,20 @@ public class VideoToolController extends AbstractController
    /** Secondary Video File */
    private File _secondaryVideo;
 
+   /** Current HyperLink File */
+   private File _currentHyperlinkFile;
+
    /** Primary Video Media Player */
-   private MediaPlayer _mediaPlayer1;
+   private MediaPlayer _primaryMediaPlayer;
 
    /** Secondary Video Media Player */
-   private MediaPlayer _mediaPlayer2;
+   private MediaPlayer _secondaryMediaPlayer;
 
    /** Dialog Window for Link Creation */
    private IDialog _linkCreationDialog;
+
+   /** Dialog Window for Importing Videos */
+   private IDialog _importVideoDialog;
 
    /** Current List of HyperLinks */
    private List<Link> _linkList;
@@ -98,10 +133,14 @@ public class VideoToolController extends AbstractController
     * Constructor
     *
     * @param primaryStage - The primary stage of the application
+    * @param homePageController - The Controller for the Home Page
     */
-   public VideoToolController(final Stage primaryStage)
+   public VideoToolController(final Stage primaryStage, final HomePageController homePageController)
    {
       super(FXML_NAME);
+
+      // Initialize Controllers
+      _homePageController = homePageController;
 
       // Initialize Video Views to Hidden
       _primaryVideoView.setVisible(false);
@@ -113,12 +152,16 @@ public class VideoToolController extends AbstractController
       // Initialize Polygon Utility Helper();
       _polygonUtil = new PolygonUtil();
 
-      // Initialize Link Creation Dialog
+      // Initialize Dialogs
       _linkCreationDialog = new LinkCreationDialog(primaryStage, this);
+      _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController);
 
       // Initialize Video Files to be null
       _primaryVideo = new File("");
       _secondaryVideo = new File("");
+
+      // Initialize Current Hyperlink File to be null
+      _currentHyperlinkFile = new File("");
 
       // Update Icons of Buttons
       _importFileButton.setText(EFontAwesome.FILE_CODE.getCode());
@@ -128,15 +171,38 @@ public class VideoToolController extends AbstractController
       _saveButton.setText(EFontAwesome.SAVE.getCode());
       _deleteLinkButton.setText(EFontAwesome.TRASH.getCode());
 
+      // Create ToolTips for Buttons
+      Tooltip importVideoTooltip = new Tooltip("Import Video Button");
+
+      // Set Tooltips for Buttons
+      _importVideoButton.setTooltip(importVideoTooltip);
+
       // Initialize Button States
       _newFileButton.setDisable(true);
       _deleteLinkButton.setDisable(true);
-      //_createLinkButton.setDisable(true);
+      _createLinkButton.setDisable(true);
+
+      // Initialize Slider States
+      _primaryVideoSlider.setDisable(true);
+      _secondaryVideoSlider.setDisable(true);
+      _primaryVideoProgressBar.setDisable(true);
+      _secondaryVideoProgressBar.setDisable(true);
+
+      // Initialize Label States
+      _primaryVideoFrameLabel.setVisible(false);
+      _primaryVideoFrame.setVisible(false);
+      _secondaryVideoFrameLabel.setVisible(false);
+      _secondaryVideoFrame.setVisible(false);
 
       // Button Listeners
       handleImportVideoButton();
       handleCreateLinkButton();
       handleDeleteLinkButton();
+      handleSaveButton();
+
+      // Slider Listeners
+      handlePrimarySlider();
+      handleSecondarySlider();
 
       // Select Link View Listeners
       handleSelectLinkView();
@@ -179,23 +245,27 @@ public class VideoToolController extends AbstractController
          final Media primaryMedia = new Media(_primaryVideo.toURI().toURL().toString());
 
          // Initialize the Primary Media Player
-         _mediaPlayer1 = new MediaPlayer(primaryMedia);
+         _primaryMediaPlayer = new MediaPlayer(primaryMedia);
 
          // Attach the Media Player to the Media View
-         _primaryVideoView.setMediaPlayer(_mediaPlayer1);
+         _primaryVideoView.setMediaPlayer(_primaryMediaPlayer);
+
+         // Wait until Media Player Ready to update Slider
+         _primaryMediaPlayer.setOnReady(new Runnable()
+         {
+            @Override
+            public void run() 
+            {
+               // Update the Primary Slider
+               updatePrimarySlider();
+            }
+         });
       }
       catch (final Exception e)
       {
          // Log Error
          e.printStackTrace();
       }
-
-      // OffLoad to the Display Thread
-      Platform.runLater(() ->
-      {
-         // Update the Primary Slider
-         setPrimarySlider();
-      });
    }
 
    /**
@@ -215,10 +285,21 @@ public class VideoToolController extends AbstractController
          final Media secondaryMedia = new Media(_secondaryVideo.toURI().toURL().toString());
 
          // Initialize the Secondary Media Player
-         _mediaPlayer2 = new MediaPlayer(secondaryMedia);
+         _secondaryMediaPlayer = new MediaPlayer(secondaryMedia);
 
-         // Attach the Media Playe rto the Media View
-         _secondaryVideoView.setMediaPlayer(_mediaPlayer2);
+         // Attach the Media Player to the Media View
+         _secondaryVideoView.setMediaPlayer(_secondaryMediaPlayer);
+
+         // Wait until Media Player Ready to update Slider
+         _secondaryMediaPlayer.setOnReady(new Runnable()
+         {
+            @Override
+            public void run() 
+            {
+               // Update the Secondary Slider
+               updateSecondarySlider();
+            }
+         });
       }
       catch (final Exception e)
       {
@@ -245,14 +326,51 @@ public class VideoToolController extends AbstractController
    }
 
    /**
+    * getHyperLinkFile - Gets the Current HyperLink File
+    *                    being edited in the Video Hyperlink Tool
+    * @return File
+    */
+   public File getHyperlinkFile()
+   {
+      return _currentHyperlinkFile;
+   }
+
+   /**
+    * saveDataToFile - Saves the Hyperlinks/Video Information
+    *                  to the Data File
+    *
+    * @param file - file to save data to
+    */
+   public void saveDataToFile(File file)
+   {
+      // TODO: IMPLEMENT (Only Dummy Writer at the moment)
+      System.out.println("Process Writing Data to File");
+
+      try 
+      {
+         PrintWriter writer;
+         writer = new PrintWriter(file);
+         writer.println("This is a Test");
+         writer.close();
+      } 
+      catch (IOException exception) 
+      {
+         // Log Error
+         exception.printStackTrace();
+      }
+   }
+
+   /**
     * handleImportVideoButton - Handles the Selection of the
     *                           Import Video Button
     */
    private void handleImportVideoButton()
    {
+      // Process Selection of Import Video Button
       _importVideoButton.setOnAction(event ->
       {
-         // TODO - Implement
+         // Show the Import Video Dialog
+         _importVideoDialog.showDialog();
       });
    }
 
@@ -267,6 +385,20 @@ public class VideoToolController extends AbstractController
       {
          // Show the Link Creation Dialog
          _linkCreationDialog.showDialog();
+      });
+   }
+
+   /**
+    * handleSaveButton - Handles the Selection
+    *                    of the Save Button
+    */
+   private void handleSaveButton()
+   {
+      // Process the Selection of the Save Button
+      _saveButton.setOnAction(event ->
+      {
+         // Save Hyperlink File as a New File
+         _homePageController.saveHyperlinkFile(true);
       });
    }
 
@@ -356,27 +488,118 @@ public class VideoToolController extends AbstractController
    }
 
    /**
-    * setPrimarySlider - Updates the Primary Slider based on the Primary Video
+    * handlePrimarySlider - Handles the Listeners for the Primary Slider
     */
-   private void setPrimarySlider()
+   private void handlePrimarySlider()
    {
-     // Update the Primary Video
-      _primaryVideoSlider.setMin(1);
-      _primaryVideoSlider.setMax(9000);
-      _primaryVideoSlider.setValue(1);
-      _primaryVideoSlider.setMajorTickUnit(1);
-      _primaryVideoSlider.setSnapToTicks(true);
-
       // Slider Change Listener
       _primaryVideoSlider.valueProperty().addListener(new ChangeListener<Number>()
       {
-         public void changed(ObservableValue<? extends Number> ov, Number old_val, Number new_val)
+         public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
-            int val = (int) _primaryVideoSlider.getValue();
-            int start = (int) Math.round((100./3) * val);
-             System.out.println(start);
-            _mediaPlayer1.seek(new Duration(start));
+            // Null Check Primary Video
+            if(_primaryVideo != null)
+            {
+                // Update Frame Count Label
+                _primaryVideoFrame.setText(String.valueOf(newVal.intValue()));
+
+                // Get the Current Frame Time (ms)
+                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
+
+                // Update the Progress Bar
+                final double maxVal = _primaryVideoSlider.getMax();
+                _primaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
+
+                // Update the Primary Video Media Player
+               _primaryMediaPlayer.seek(new Duration(frameTime));
+            }
          }
       });
+   }
+
+   /**
+    * handleSecondarySlider - Handles the Listeners for the Secondary Slider
+    */
+   private void handleSecondarySlider()
+   {
+      // Slider Change Listener
+      _secondaryVideoSlider.valueProperty().addListener(new ChangeListener<Number>()
+      {
+         public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
+         {
+            // Null Check Primary Video
+            if(_secondaryVideo != null)
+            {
+                // Update Frame Count Label
+                _secondaryVideoFrame.setText(String.valueOf(newVal.intValue()));
+
+                // Get the Current Frame Time (ms)
+                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
+
+                // Update the Progress Bar
+                final double maxVal = _secondaryVideoSlider.getMax();
+                _secondaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
+
+                // Update the Primary Video Media Player
+               _secondaryMediaPlayer.seek(new Duration(frameTime));
+            }
+         }
+      });
+   }
+
+   /**
+    * updatePrimarySlider - Updates the Primary Slider based
+    *                       on the Primary Video
+    */
+   private void updatePrimarySlider()
+   {
+      // Enable Primary Video Slider
+      _primaryVideoSlider.setDisable(false);
+      _primaryVideoProgressBar.setDisable(false);
+
+      // Get Number of Frames
+      Duration duration = _primaryMediaPlayer.getTotalDuration();
+      int totalSeconds = (int) Math.round(duration.toSeconds());
+      int totalFrames = totalSeconds * 30;
+
+      // Set Slider Properties
+      _primaryVideoSlider.setMin(1);
+      _primaryVideoSlider.setMax(totalFrames);
+      _primaryVideoSlider.setValue(1);
+      _primaryVideoSlider.setBlockIncrement(1.0);
+      _primaryVideoSlider.setMajorTickUnit(1.0);
+      _primaryVideoSlider.setSnapToTicks(true);
+
+      // Show Primary Video Frame Labels
+      _primaryVideoFrame.setVisible(true);
+      _primaryVideoFrameLabel.setVisible(true);
+   }
+
+   /**
+    * updateSecondarySlider - Updates the Secondary Slider based
+    *                         on the Secondary Video
+    */
+   private void updateSecondarySlider()
+   {
+      // Enable Primary Video Slider
+      _secondaryVideoSlider.setDisable(false);
+      _secondaryVideoProgressBar.setDisable(false);
+
+      // Get Number of Frames
+      Duration duration = _secondaryMediaPlayer.getTotalDuration();
+      int totalSeconds = (int) Math.round(duration.toSeconds());
+      int totalFrames = totalSeconds * FPS;
+
+      // Set Slider Properties
+      _secondaryVideoSlider.setMin(1);
+      _secondaryVideoSlider.setMax(totalFrames);
+      _secondaryVideoSlider.setValue(1);
+      _secondaryVideoSlider.setBlockIncrement(1.0);
+      _secondaryVideoSlider.setMajorTickUnit(1.0);
+      _secondaryVideoSlider.setSnapToTicks(true);
+
+      // Show Secondary Video Frame Labels
+      _secondaryVideoFrame.setVisible(true);
+      _secondaryVideoFrameLabel.setVisible(true);
    }
 }

@@ -11,6 +11,7 @@
    boulder: #787878;       /** Medium Gray */
    silverChalice: #B2B2B2; /** Light Gray */
    dodgerBlue: #3189F6;    /** Blue */
+   milanoRed: #B9090B;     /** Red  */
 
    /** Define Common Color Usage */
    textColor: silverChalice;
@@ -25,6 +26,7 @@
 .contentPane
 {
    -fx-background-color: mineShaft;
+   -fx-text-fill: textColor;
 }
 
 /** CSS for Video View Panes */
@@ -184,14 +186,37 @@
    -fx-background-color: tundora;
 }
 
-/** CSS for Slider Track */
-.frameSlider .track
+/** CSS for Progress Bar */
+.videoProgressBar .track
 {
    -fx-background-color: tundora;
 }
 
+.videoProgressBar .bar
+{
+   -fx-padding: 1px;
+   -fx-background-insets: 0;
+}
+
+/** CSS for Video Progress Bar */
+.videoProgressBar
+{
+   -fx-accent: milanoRed;
+}
+
+/** CSS for Slider Track */
+.frameSlider .track
+{
+   -fx-background-color: null;
+}
+
 /** CSS for Slider Thumb */
 .frameSlider .thumb
+{
+   -fx-background-color: milanoRed;
+}
+
+.frameSlider:disabled .thumb
 {
    -fx-background-color: boulder;
 }
@@ -230,4 +255,3 @@
    -fx-border-color: silverChalice;
    -fx-border-width: 1;
 }
-

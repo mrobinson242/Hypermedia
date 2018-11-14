@@ -9,14 +9,15 @@
 <fx:root prefHeight="530.0" prefWidth="1200.0" type="Pane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Separator layoutX="900.0" orientation="VERTICAL" prefHeight="530.0" prefWidth="0.0" />
-      <Button fx:id="_playButton" layoutX="1005.0" layoutY="65.0" mnemonicParsing="false" prefHeight="90.0" prefWidth="90.0" styleClass="awesomeButton" text="Play Button" />
-      <Button fx:id="_pauseButton" layoutX="1005.0" layoutY="220.0" mnemonicParsing="false" prefHeight="90.0" prefWidth="90.0" styleClass="awesomeButton" text="Pause Button" />
-      <Button fx:id="_stopButton" layoutX="1005.0" layoutY="375.0" mnemonicParsing="false" prefHeight="90.0" prefWidth="90.0" styleClass="awesomeButton" text="Stop Button" />
+      <Button fx:id="_playButton" layoutX="1005.0" layoutY="170.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Play Button" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_pauseButton" layoutX="1005.0" layoutY="290.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Pause Button" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_stopButton" layoutX="1005.0" layoutY="410.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Stop Button" textAlignment="CENTER" wrapText="true" />
       <Pane layoutX="186.0" layoutY="30.0" prefHeight="432.0" prefWidth="528.0" styleClass="videoPane">
          <children>
             <MediaView fitHeight="432.0" fitWidth="528.0" />
          </children>
       </Pane>
       <Slider layoutX="186.0" layoutY="475.0" prefWidth="528.0" styleClass="frameSlider" />
+      <Button fx:id="_openVideo" layoutX="1005.0" layoutY="50.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Open Video" textAlignment="CENTER" wrapText="true" />
    </children>
 </fx:root>

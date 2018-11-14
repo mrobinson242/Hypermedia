@@ -31,27 +31,26 @@ public class LinkCreationDialog extends AbstractDialog
    /**
     * Constructor
     * 
-    * @param - The Primary Stage of the Application
+    * @param primaryStage - The Primary Stage of the Application
     */
    public LinkCreationDialog(final Stage primaryStage, final VideoToolController videoToolController)
    {
       super(primaryStage, FXML_NAME);
 
-      // Initialize Controller
-      _videoToolController = videoToolController;
-
-      // Handle Listeners
-      handleCreateLinkButton();
-      handleCloseButton();
-      handleLinkTextField();
-      handleDialogVisibility();
-
       // Set Title of Dialog
       _dialogStage.setTitle("Link Creator Dialog");
+
+      // Initialize Controller
+      _videoToolController = videoToolController;
 
       // Initially Disable Create Link Button
       _createLinkButton.setDisable(true);
 
+      // Handle Listeners
+      handleCreateLinkButton();
+      handleCancelButton();
+      handleLinkTextField();
+      handleDialogVisibility();
    }
 
    /**
@@ -76,9 +75,9 @@ public class LinkCreationDialog extends AbstractDialog
    }
 
    /**
-    * handleCloseButton - Handles the Listener on the Close Button
+    * handleCancelButton - Handles the Listener on the Cancel Button
     */
-   private void handleCloseButton()
+   private void handleCancelButton()
    {
       // Handle Selection of Close Button
       _closeButton.setOnAction(event ->
@@ -87,7 +86,7 @@ public class LinkCreationDialog extends AbstractDialog
          hideDialog();
       });
    }
-   
+
    /**
     * handleDialogVisibility - Performs Actions based on Dialog Visibility
     */

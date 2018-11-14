@@ -12,8 +12,10 @@
          <menus>
             <Menu fx:id="_fileMenu" mnemonicParsing="false" styleClass="menu" text="File">
                <items>
-                  <MenuItem fx:id="_importPrimaryVideoButton" mnemonicParsing="false" text="Import Primary Video" />
-                  <MenuItem fx:id="_importSecondaryVideoButton" mnemonicParsing="false" text="Import Secondary Video" />
+                  <MenuItem fx:id="_importPrimaryVideoItem" mnemonicParsing="false" text="Import Primary Video" />
+                  <MenuItem fx:id="_importSecondaryVideoItem" mnemonicParsing="false" text="Import Secondary Video" />
+                  <MenuItem fx:id="_saveMenuItem" mnemonicParsing="false" text="Save" />
+                  <MenuItem fx:id="_saveAsMenuItem" mnemonicParsing="false" text="Save As" />
                   <MenuItem fx:id="_exitItem" mnemonicParsing="false" text="Exit" />
                </items>
             </Menu>
@@ -26,7 +28,7 @@
       </MenuBar>
       <Pane fx:id="_tabPane" layoutY="30.0" prefHeight="50.0" prefWidth="1200.0" styleClass="tabPane">
          <children>
-            <ToggleButton fx:id="_videoToolButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="tabButton" text="Hyperlink Video Tool" textAlignment="CENTER" wrapText="true" />
+            <ToggleButton fx:id="_videoToolButton" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="tabButton" text="Video Tool" textAlignment="CENTER" wrapText="true" />
             <ToggleButton fx:id="_videoPlayerButton" layoutX="90.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="tabButton" text="Video Player" textAlignment="CENTER" wrapText="true" />
          </children>
       </Pane>
