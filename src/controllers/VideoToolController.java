@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import data.Link;
@@ -101,6 +100,9 @@ public class VideoToolController extends AbstractController
    /** Frame Rate of Imported Videos */
    private static final int FPS = 30;
 
+   /** The Start Frame of the Videos */
+   private static final int MIN_FRAME = 1;
+
    /** Home Page Controller */
    private HomePageController _homePageController;
 
@@ -133,6 +135,9 @@ public class VideoToolController extends AbstractController
 
    /** Current Frame of Primary Video */
    private int _currentPrimaryFrame;
+
+   /** Current Frame of Secondary Video */
+   private int _currentSecondaryFrame;
 
    /**
     * Constructor
@@ -232,7 +237,7 @@ public class VideoToolController extends AbstractController
               boolean isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices());
 
               // TODO: Remove Debug Stmt
-              System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
+              // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
            }
         }
       });
@@ -269,11 +274,15 @@ public class VideoToolController extends AbstractController
                // Update the Primary Slider
                updatePrimarySlider();
 
-               // Update Current Frame
-               _currentPrimaryFrame = 1;
+               // Update Current Primary Frame
+               _currentPrimaryFrame = MIN_FRAME;
 
-               // Enable Linking Tool
-               _createLinkButton.setDisable(false);
+               // Null Check both Primary and Secondary Video Tool
+               if(_primaryVideo.exists() && _secondaryVideo.exists())
+               {
+                  // Enable Linking Tool
+                  _createLinkButton.setDisable(false);
+               }
             }
          });
       }
@@ -314,6 +323,16 @@ public class VideoToolController extends AbstractController
             {
                // Update the Secondary Slider
                updateSecondarySlider();
+
+               // Update Current Secondary Frame
+               _currentSecondaryFrame = MIN_FRAME;
+
+               // Null Check both Primary and Secondary Video Tool
+               if(_primaryVideo.exists() && _secondaryVideo.exists())
+               {
+                  // Enable Linking Tool
+                  _createLinkButton.setDisable(false);
+               }
             }
          });
       }
@@ -331,6 +350,11 @@ public class VideoToolController extends AbstractController
     */
    public void createHyperlink(final Link link)
    {
+      // Set To/From Video
+      link.setFromVideo(_primaryVideo);
+      link.setToVideo(_secondaryVideo);
+      link.setToFrame(_currentSecondaryFrame);
+
       // Add Link to ListView
       _selectLinkView.getItems().add(link);
 
@@ -353,7 +377,7 @@ public class VideoToolController extends AbstractController
          }
          else
          {
-            _frameToLinkMap.get(_primaryVideoFrame).add(link);
+            _frameToLinkMap.get(_currentPrimaryFrame).add(link);
          }
       }
 
@@ -377,23 +401,10 @@ public class VideoToolController extends AbstractController
     *
     * @param file - file to save data to
     */
-   public void saveDataToFile(File file)
+   public void saveDataToFile(final File file)
    {
-      // TODO: IMPLEMENT (Only Dummy Writer at the moment)
-      System.out.println("Process Writing Data to File");
-
-      try 
-      {
-         PrintWriter writer;
-         writer = new PrintWriter(file);
-         writer.println("This is a Test");
-         writer.close();
-      } 
-      catch (IOException exception) 
-      {
-         // Log Error
-         exception.printStackTrace();
-      }
+      // Store Data in Hyperlink File
+      writeDataToFile(file);
    }
 
    /**
@@ -407,9 +418,6 @@ public class VideoToolController extends AbstractController
 
       // Re-Add the Primary Video View
       _primaryVideoPane.getChildren().add(_primaryVideoView);
-
-      // TODO: Remove Debug Statement
-      System.out.println("Current Primary Frame: " + _currentPrimaryFrame);
 
       // Get the List of Links from the Map
       final ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
@@ -605,6 +613,9 @@ public class VideoToolController extends AbstractController
                 // Update Frame Count Label
                 _secondaryVideoFrame.setText(String.valueOf(newVal.intValue()));
 
+                // Update Current Secondary Frame
+                _currentPrimaryFrame = newVal.intValue();
+
                 // Get the Current Frame Time (ms)
                 final double frameTime = (newVal.doubleValue()/FPS) * 1000;
 
@@ -635,7 +646,7 @@ public class VideoToolController extends AbstractController
       int totalFrames = totalSeconds * 30;
 
       // Set Slider Properties
-      _primaryVideoSlider.setMin(1);
+      _primaryVideoSlider.setMin(MIN_FRAME);
       _primaryVideoSlider.setMax(totalFrames);
       _primaryVideoSlider.setValue(1);
       _primaryVideoSlider.setBlockIncrement(1.0);
@@ -663,7 +674,7 @@ public class VideoToolController extends AbstractController
       int totalFrames = totalSeconds * FPS;
 
       // Set Slider Properties
-      _secondaryVideoSlider.setMin(1);
+      _secondaryVideoSlider.setMin(MIN_FRAME);
       _secondaryVideoSlider.setMax(totalFrames);
       _secondaryVideoSlider.setValue(1);
       _secondaryVideoSlider.setBlockIncrement(1.0);
@@ -673,5 +684,35 @@ public class VideoToolController extends AbstractController
       // Show Secondary Video Frame Labels
       _secondaryVideoFrame.setVisible(true);
       _secondaryVideoFrameLabel.setVisible(true);
+   }
+
+   /**
+    * uploadDataFromFile - Reads in Data from Hyperlink File
+    */
+   private void uploadDataFromFile()
+   {
+      // TODO: IMPLEMENT
+   }
+
+   /**
+    * writeDataToFile
+    * 
+    * @param file - File to write data to
+    */
+   private void writeDataToFile(final File file)
+   {
+      // TODO: IMPLEMENT
+      try 
+      {
+         PrintWriter writer;
+         writer = new PrintWriter(file);
+         writer.println("This is a Test");
+         writer.close();
+      } 
+      catch (IOException exception) 
+      {
+         // Log Error
+         exception.printStackTrace();
+      }
    }
 }

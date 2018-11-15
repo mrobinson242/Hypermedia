@@ -1,5 +1,6 @@
 package data;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,15 @@ public class Link
    /** Bounding Box Editable Indicator */
    private Boolean _isEditable;
 
+   /** File of the Video the Hyperlink points from */
+   private File _fromVideo;
+
+   /** File of the Video the Hyperlink points from */
+   private File _toVideo;
+
+   /** Frame of the Video the Hyperlink points to */
+   private int _toFrame;
+
    /**
     * Constructor
     * 
@@ -50,6 +60,13 @@ public class Link
 
       // Initialize Polygon for Bounding Box
       _boundingBox = createBoundingArea();
+
+      // Initialize To/From Videos
+      _toVideo = new File("");
+      _fromVideo = new File("");
+
+      // Initialize To Frame
+      _toFrame = 0;
 
       // Initialize Bounding 
       _linkGroup = new Group();
@@ -114,6 +131,68 @@ public class Link
       }
 
       return vertices;
+   }
+
+   /**
+    * getFromVideo - Get's the Path of the video
+    *                the Hyperlink is from
+    * @return file
+    */
+   public File getFromVideo()
+   {
+      return _fromVideo;
+   }
+
+   /**
+    * getToVideo - Gets the Path of the video
+    *              the Hyperlink points toward
+    * @return File
+    */
+   public File getToVideo()
+   {
+      return _toVideo;
+   }
+
+   /**
+    * getToFrame - Gets the Frame of the video
+    *              the Hyperlink points toward
+    * @return
+    */
+   public int getToFrame()
+   {
+      return _toFrame;
+   }
+
+   /**
+    * setFromVideo - Sets the Path of the video
+    *                the Hyperlink is from
+    *
+    * @param fromVideo
+    */
+   public void setFromVideo(final File fromVideo)
+   {
+      _fromVideo = fromVideo;
+   }
+
+   /**
+    * setToVideo - Sets the Path of the video
+    *              the Hyperlink points toward
+    * @param toVideo
+    */
+   public void setToVideo(final File toVideo)
+   {
+      _toVideo = toVideo;
+   }
+
+   /**
+    * setToFrame - Sets the Frame of the video
+    *              the Hyperlink points toward
+    *
+    * @param toFrame
+    */
+   public void setToFrame(final int toFrame)
+   {
+      _toFrame = toFrame;
    }
 
    /**
