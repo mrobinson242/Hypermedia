@@ -504,7 +504,7 @@ public class VideoToolController extends AbstractController
                 _primaryVideoFrame.setText(String.valueOf(newVal.intValue()));
 
                 // Get the Current Frame Time (ms)
-                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
+                final double frameTime = (newVal.doubleValue()/1) * 1000;
 
                 // Update the Progress Bar
                 final double maxVal = _primaryVideoSlider.getMax();
