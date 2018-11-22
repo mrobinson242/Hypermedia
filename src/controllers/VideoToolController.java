@@ -4,7 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import data.Link;
 import data.Point;
@@ -99,6 +100,9 @@ public class VideoToolController extends AbstractController
    /** Frame Rate of Imported Videos */
    private static final int FPS = 30;
 
+   /** The Start Frame of the Videos */
+   private static final int MIN_FRAME = 1;
+
    /** Home Page Controller */
    private HomePageController _homePageController;
 
@@ -123,11 +127,17 @@ public class VideoToolController extends AbstractController
    /** Dialog Window for Importing Videos */
    private IDialog _importVideoDialog;
 
-   /** Current List of HyperLinks */
-   private List<Link> _linkList;
-
    /** Polygon Math Utility Helper */
    private PolygonUtil _polygonUtil;
+
+   /** Mapping of Frames to Links */
+   private Map<Integer, ArrayList<Link>> _frameToLinkMap;
+
+   /** Current Frame of Primary Video */
+   private int _currentPrimaryFrame;
+
+   /** Current Frame of Secondary Video */
+   private int _currentSecondaryFrame;
 
    /**
     * Constructor
@@ -146,11 +156,11 @@ public class VideoToolController extends AbstractController
       _primaryVideoView.setVisible(false);
       _secondaryVideoView.setVisible(false);
 
-      // Initialize List of HyperLinks
-      _linkList = new ArrayList<Link>();
-
       // Initialize Polygon Utility Helper();
       _polygonUtil = new PolygonUtil();
+
+      // Initialize Frame to Link Map
+      _frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
 
       // Initialize Dialogs
       _linkCreationDialog = new LinkCreationDialog(primaryStage, this);
@@ -173,9 +183,11 @@ public class VideoToolController extends AbstractController
 
       // Create ToolTips for Buttons
       Tooltip importVideoTooltip = new Tooltip("Import Video Button");
+      Tooltip saveToolTip = new Tooltip("Save Button");
 
       // Set Tooltips for Buttons
       _importVideoButton.setTooltip(importVideoTooltip);
+      _saveButton.setTooltip(saveToolTip);
 
       // Initialize Button States
       _newFileButton.setDisable(true);
@@ -215,14 +227,17 @@ public class VideoToolController extends AbstractController
            // Get Mouse Event
            Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
 
+           // Get Link List associated with Current Frame
+           ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
+
            // Iterate over the Current Links
-           for(Link link : _linkList)
+           for(Link link : linkList)
            {
               // Check if Mouse Press is inside Polygon
               boolean isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices());
 
               // TODO: Remove Debug Stmt
-              System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
+              // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
            }
         }
       });
@@ -258,6 +273,16 @@ public class VideoToolController extends AbstractController
             {
                // Update the Primary Slider
                updatePrimarySlider();
+
+               // Update Current Primary Frame
+               _currentPrimaryFrame = MIN_FRAME;
+
+               // Null Check both Primary and Secondary Video Tool
+               if(_primaryVideo.exists() && _secondaryVideo.exists())
+               {
+                  // Enable Linking Tool
+                  _createLinkButton.setDisable(false);
+               }
             }
          });
       }
@@ -298,6 +323,16 @@ public class VideoToolController extends AbstractController
             {
                // Update the Secondary Slider
                updateSecondarySlider();
+
+               // Update Current Secondary Frame
+               _currentSecondaryFrame = MIN_FRAME;
+
+               // Null Check both Primary and Secondary Video Tool
+               if(_primaryVideo.exists() && _secondaryVideo.exists())
+               {
+                  // Enable Linking Tool
+                  _createLinkButton.setDisable(false);
+               }
             }
          });
       }
@@ -315,14 +350,39 @@ public class VideoToolController extends AbstractController
     */
    public void createHyperlink(final Link link)
    {
+      // Set To/From Video
+      link.setFromVideo(_primaryVideo);
+      link.setToVideo(_secondaryVideo);
+      link.setToFrame(_currentSecondaryFrame);
+
       // Add Link to ListView
       _selectLinkView.getItems().add(link);
 
-      // Add Link to Stored List
-      _linkList.add(link);
+      synchronized(_frameToLinkMap)
+      {
+         // Associate the Link with the Current Frame
+         ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
 
-      // Add the Link's Bounding Box to the Video Pane
-      _primaryVideoPane.getChildren().add(link.getBoundingGroup());
+         // Null Check Link List
+         if(linkList == null)
+         {
+            // Create new Link List
+            linkList = new ArrayList<Link>();
+
+            // Add Link to List
+            linkList.add(link);
+
+            // Create Mapping
+            _frameToLinkMap.put(_currentPrimaryFrame, linkList);
+         }
+         else
+         {
+            _frameToLinkMap.get(_currentPrimaryFrame).add(link);
+         }
+      }
+
+      // Display Links
+      displayLinks();
    }
 
    /**
@@ -341,22 +401,36 @@ public class VideoToolController extends AbstractController
     *
     * @param file - file to save data to
     */
-   public void saveDataToFile(File file)
+   public void saveDataToFile(final File file)
    {
-      // TODO: IMPLEMENT (Only Dummy Writer at the moment)
-      System.out.println("Process Writing Data to File");
+      // Store Data in Hyperlink File
+      writeDataToFile(file);
+   }
 
-      try 
+   /**
+    * displayLinks - Displays all the Links associated
+    *                with the current Frame
+    */
+   private void displayLinks()
+   {
+      // Clear existing Links
+      _primaryVideoPane.getChildren().clear();
+
+      // Re-Add the Primary Video View
+      _primaryVideoPane.getChildren().add(_primaryVideoView);
+
+      // Get the List of Links from the Map
+      final ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
+
+      // Null Check Link List
+      if(linkList != null)
       {
-         PrintWriter writer;
-         writer = new PrintWriter(file);
-         writer.println("This is a Test");
-         writer.close();
-      } 
-      catch (IOException exception) 
-      {
-         // Log Error
-         exception.printStackTrace();
+         // Iterate over all Links associated with the frame
+         for(Link link : linkList)
+         {
+            // Add the Link's Bounding Box to the Video Pane
+            _primaryVideoPane.getChildren().add(link.getBoundingGroup());
+         }
       }
    }
 
@@ -417,8 +491,8 @@ public class VideoToolController extends AbstractController
          // Remove Link from Primary Video Pane
          _primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup());
 
-         // Remove Link from Stored List
-         _linkList.remove(selectedLink);
+         // Remove Link from Frame to Link Map
+         _frameToLinkMap.get(_currentPrimaryFrame).remove(selectedLink);
 
          // Remove Link from Select Link View
          _selectLinkView.getItems().remove(selectedLink);
@@ -503,6 +577,9 @@ public class VideoToolController extends AbstractController
                 // Update Frame Count Label
                 _primaryVideoFrame.setText(String.valueOf(newVal.intValue()));
 
+                // Update Current Primary Frame
+                _currentPrimaryFrame = newVal.intValue();
+
                 // Get the Current Frame Time (ms)
                 final double frameTime = (newVal.doubleValue()/1) * 1000;
 
@@ -512,6 +589,9 @@ public class VideoToolController extends AbstractController
 
                 // Update the Primary Video Media Player
                _primaryMediaPlayer.seek(new Duration(frameTime));
+
+               // Display Links associated with Current Frame
+               displayLinks();
             }
          }
       });
@@ -532,6 +612,9 @@ public class VideoToolController extends AbstractController
             {
                 // Update Frame Count Label
                 _secondaryVideoFrame.setText(String.valueOf(newVal.intValue()));
+
+                // Update Current Secondary Frame
+                _currentPrimaryFrame = newVal.intValue();
 
                 // Get the Current Frame Time (ms)
                 final double frameTime = (newVal.doubleValue()/FPS) * 1000;
@@ -563,7 +646,7 @@ public class VideoToolController extends AbstractController
       int totalFrames = totalSeconds * 30;
 
       // Set Slider Properties
-      _primaryVideoSlider.setMin(1);
+      _primaryVideoSlider.setMin(MIN_FRAME);
       _primaryVideoSlider.setMax(totalFrames);
       _primaryVideoSlider.setValue(1);
       _primaryVideoSlider.setBlockIncrement(1.0);
@@ -591,7 +674,7 @@ public class VideoToolController extends AbstractController
       int totalFrames = totalSeconds * FPS;
 
       // Set Slider Properties
-      _secondaryVideoSlider.setMin(1);
+      _secondaryVideoSlider.setMin(MIN_FRAME);
       _secondaryVideoSlider.setMax(totalFrames);
       _secondaryVideoSlider.setValue(1);
       _secondaryVideoSlider.setBlockIncrement(1.0);
@@ -601,5 +684,35 @@ public class VideoToolController extends AbstractController
       // Show Secondary Video Frame Labels
       _secondaryVideoFrame.setVisible(true);
       _secondaryVideoFrameLabel.setVisible(true);
+   }
+
+   /**
+    * uploadDataFromFile - Reads in Data from Hyperlink File
+    */
+   private void uploadDataFromFile()
+   {
+      // TODO: IMPLEMENT
+   }
+
+   /**
+    * writeDataToFile
+    * 
+    * @param file - File to write data to
+    */
+   private void writeDataToFile(final File file)
+   {
+      // TODO: IMPLEMENT
+      try 
+      {
+         PrintWriter writer;
+         writer = new PrintWriter(file);
+         writer.println("This is a Test");
+         writer.close();
+      } 
+      catch (IOException exception) 
+      {
+         // Log Error
+         exception.printStackTrace();
+      }
    }
 }
