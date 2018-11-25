@@ -336,7 +336,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/videos");
+      sb.append("/videos");
 
       // Set Path to Video Files
       final File videoFile = new File(sb.toString());
@@ -354,7 +354,7 @@ public class HomePageController extends AbstractController
       _saveFileChooser = new FileChooser();
 
       // TODO: Determine the Type of Extension we want on our file
-      FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+      FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
       _saveFileChooser.getExtensionFilters().add(extFilter);
 
       // Get Current Directory
@@ -364,7 +364,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/files");
+      sb.append("/files");
 
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());
