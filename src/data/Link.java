@@ -74,6 +74,31 @@ public class Link
       _linkGroup.getChildren().addAll(createBoxAnchors(_boundingBox.getPoints()));
    }
 
+
+   public Link(String name, String fromVideo, String toVideo, int toFrame, ArrayList<Double> pos)
+   {
+      // Initialize Link Name
+      _name = name;
+
+      // Initialize isEditable Indicator
+      _isEditable = false;
+
+      // Initialize Polygon for Bounding Box
+      _boundingBox = createBoundingArea(pos);
+
+      // Initialize To/From Videos
+      _toVideo = new File(toVideo);
+      _fromVideo = new File(fromVideo);
+
+      // Initialize To Frame
+      _toFrame = toFrame;
+
+      // Initialize Bounding 
+      _linkGroup = new Group();
+      _linkGroup.getChildren().add(_boundingBox);
+      _linkGroup.getChildren().addAll(createBoxAnchors(_boundingBox.getPoints()));
+   }
+
    /**
     * getName - Gets the Name of the Link
     *
@@ -233,6 +258,19 @@ public class Link
       polygon.setStrokeWidth(2);
       polygon.setFill(Color.TRANSPARENT);
 
+      return polygon;
+   }
+
+   private Polygon createBoundingArea(ArrayList<Double> pos) 
+   {
+      Polygon polygon = new Polygon();
+      for (Double p : pos) {
+        polygon.getPoints().add(p);
+      }
+      polygon.setStroke(Color.FORESTGREEN);
+      polygon.setStrokeWidth(2);
+      polygon.setFill(Color.TRANSPARENT);
+      
       return polygon;
    }
 
