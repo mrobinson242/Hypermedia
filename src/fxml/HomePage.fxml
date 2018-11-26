@@ -6,7 +6,7 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.Pane?>
 
-<fx:root prefHeight="600.0" type="Pane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root prefHeight="600.0" type="Pane" xmlns="http://javafx.com/javafx/" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <MenuBar fx:id="_menuBar" prefHeight="30.0" prefWidth="1200.0" styleClass="menuBarPane">
          <menus>

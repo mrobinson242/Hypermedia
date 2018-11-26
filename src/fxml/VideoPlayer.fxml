@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.media.MediaView?>
 
-<fx:root prefHeight="530.0" prefWidth="1200.0" type="Pane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root prefHeight="530.0" prefWidth="1200.0" type="Pane" xmlns="http://javafx.com/javafx/" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Separator layoutX="900.0" orientation="VERTICAL" prefHeight="530.0" prefWidth="0.0" />
       <Button fx:id="_playButton" layoutX="1005.0" layoutY="170.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Play Button" textAlignment="CENTER" wrapText="true" />

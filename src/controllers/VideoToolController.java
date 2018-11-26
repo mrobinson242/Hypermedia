@@ -33,12 +33,15 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import util.PolygonUtil;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+
 import java.io.FileWriter;
 import java.util.Iterator;
-import org.json.simple.parser.JSONParser;
+
 import java.io.FileReader;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -105,7 +108,7 @@ public class VideoToolController extends AbstractController
 
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "VideoTool.fxml";
-   
+
    /** Frame Rate of Imported Videos */
    private static final int FPS = 30;
 
@@ -231,24 +234,24 @@ public class VideoToolController extends AbstractController
       // Mouse Press Listener
       _primaryVideoPane.setOnMousePressed(new EventHandler<MouseEvent>()
       {
-        @Override public void handle(final MouseEvent mouseEvent)
-        {
-           // Get Mouse Event
-           Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
+         @Override public void handle(final MouseEvent mouseEvent)
+         {
+            // Get Mouse Event
+            Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
 
-           // Get Link List associated with Current Frame
-           ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
+            // Get Link List associated with Current Frame
+            ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
 
-           // Iterate over the Current Links
-           for(Link link : linkList)
-           {
-              // Check if Mouse Press is inside Polygon
-              boolean isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices());
+            // Iterate over the Current Links
+            for(Link link : linkList)
+            {
+               // Check if Mouse Press is inside Polygon
+               boolean isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices());
 
-              // TODO: Remove Debug Stmt
-              // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
-           }
-        }
+               // TODO: Remove Debug Stmt
+               // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
+            }
+         }
       });
    }
 
@@ -585,20 +588,20 @@ public class VideoToolController extends AbstractController
             // Null Check Primary Video
             if(_primaryVideo != null)
             {
-                // Update Frame Count Label
-                _primaryVideoFrame.setText(String.valueOf(newVal.intValue()));
+               // Update Frame Count Label
+               _primaryVideoFrame.setText(String.valueOf(newVal.intValue()));
 
-                // Update Current Primary Frame
-                _currentPrimaryFrame = newVal.intValue();
+               // Update Current Primary Frame
+               _currentPrimaryFrame = newVal.intValue();
 
-                // Get the Current Frame Time (ms)
-                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
+               // Get the Current Frame Time (ms)
+               final double frameTime = (newVal.doubleValue()/FPS) * 1000;
 
-                // Update the Progress Bar
-                final double maxVal = _primaryVideoSlider.getMax();
-                _primaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
+               // Update the Progress Bar
+               final double maxVal = _primaryVideoSlider.getMax();
+               _primaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
 
-                // Update the Primary Video Media Player
+               // Update the Primary Video Media Player
                _primaryMediaPlayer.seek(new Duration(frameTime));
 
                // Display Links associated with Current Frame
@@ -621,20 +624,20 @@ public class VideoToolController extends AbstractController
             // Null Check Primary Video
             if(_secondaryVideo != null)
             {
-                // Update Frame Count Label
-                _secondaryVideoFrame.setText(String.valueOf(newVal.intValue()));
+               // Update Frame Count Label
+               _secondaryVideoFrame.setText(String.valueOf(newVal.intValue()));
 
-                // Update Current Secondary Frame
-                _currentPrimaryFrame = newVal.intValue();
+               // Update Current Secondary Frame
+               _currentPrimaryFrame = newVal.intValue();
 
-                // Get the Current Frame Time (ms)
-                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
+               // Get the Current Frame Time (ms)
+               final double frameTime = (newVal.doubleValue()/FPS) * 1000;
 
-                // Update the Progress Bar
-                final double maxVal = _secondaryVideoSlider.getMax();
-                _secondaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
+               // Update the Progress Bar
+               final double maxVal = _secondaryVideoSlider.getMax();
+               _secondaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
 
-                // Update the Primary Video Media Player
+               // Update the Primary Video Media Player
                _secondaryMediaPlayer.seek(new Duration(frameTime));
             }
          }
@@ -706,37 +709,43 @@ public class VideoToolController extends AbstractController
       _frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
       JSONParser parser = new JSONParser();
       try {
-        Object obj = parser.parse(new FileReader(file));
-        JSONObject jsonObject = (JSONObject) obj;
-        Iterator<String> frames = jsonObject.keySet().iterator();
-        while(frames.hasNext()) {
-          String frame = frames.next();
-          JSONArray frameLinks = (JSONArray) jsonObject.get(frame);
-          Iterator allLinks = frameLinks.iterator();
-          ArrayList<Link> linkList = new ArrayList<Link>();
-          while (allLinks.hasNext()) {
-            JSONObject linkInfo = (JSONObject) allLinks.next();
-            String name = (String) linkInfo.get("name");
-            String toVideo = (String) linkInfo.get("toVideo");
-            String fromVideo = (String) linkInfo.get("fromVideo");
-            int toFrame = (int) linkInfo.get("toFrame");
-            JSONArray pointInfo = (JSONArray) linkInfo.get("points");
-            Iterator points = pointInfo.iterator();
-            ArrayList<Double> pList = new ArrayList<Double>();
-            while (points.hasNext()) {
-              pList.add((Double) points.next());
+         Object obj = parser.parse(new FileReader(file));
+         JSONObject jsonObject = (JSONObject) obj;
+         Iterator<String> frames = jsonObject.keySet().iterator();
+         while(frames.hasNext()) {
+            String frame = frames.next();
+            JSONArray frameLinks = (JSONArray) jsonObject.get(frame);
+            Iterator allLinks = frameLinks.iterator();
+            ArrayList<Link> linkList = new ArrayList<Link>();
+            while (allLinks.hasNext()) {
+               JSONObject linkInfo = (JSONObject) allLinks.next();
+               String name = (String) linkInfo.get("name");
+               String toVideo = (String) linkInfo.get("toVideo");
+               String fromVideo = (String) linkInfo.get("fromVideo");
+               int toFrame = (int) linkInfo.get("toFrame");
+               JSONArray pointInfo = (JSONArray) linkInfo.get("points");
+               Iterator points = pointInfo.iterator();
+               ArrayList<Double> pList = new ArrayList<Double>();
+               while (points.hasNext()) {
+                  pList.add((Double) points.next());
+               }
+               Link now = new Link(name, fromVideo, toVideo, toFrame, pList);
+               linkList.add(now);
             }
-            Link now = new Link(name, fromVideo, toVideo, toFrame, pList);
-            linkList.add(now);
-          }
-          _frameToLinkMap.put(Integer.parseInt(frame), linkList);
-        }
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (ParseException e) {
-        e.printStackTrace();
+            _frameToLinkMap.put(Integer.parseInt(frame), linkList);
+         }
+      } 
+      catch (FileNotFoundException e)
+      {
+         e.printStackTrace();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+      catch (ParseException e)
+      {
+         e.printStackTrace();
       } 
    }
 
@@ -752,44 +761,44 @@ public class VideoToolController extends AbstractController
       JSONObject frames = new JSONObject();
       Iterator allLinks = _frameToLinkMap.entrySet().iterator();
       while (allLinks.hasNext()) {
-        Map.Entry frameInfo = (Map.Entry) allLinks.next();
-        int frameNum = (int) frameInfo.getKey();
-        ArrayList<Link> frameLinks = (ArrayList<Link>) frameInfo.getValue();
-        JSONArray links = new JSONArray();
-        for (Link link : frameLinks) {
-          JSONObject linkInfo = new JSONObject();
-          linkInfo.put("name", link.getName());
-          try {
-            linkInfo.put("fromVideo", link.getFromVideo().toPath());
-            linkInfo.put("toVideo", link.getToVideo().toPath());
-          }
-          catch (final Exception e)
-          {
-             // Log Error
-             e.printStackTrace();
-          }
-          linkInfo.put("toFrame", link.getToFrame());
-          JSONArray points = new JSONArray();
-          ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices();
-          for (int i = 0; i < pointArray.size(); i++) {
-            points.add(pointArray.get(i).getX());
-            points.add(pointArray.get(i).getY());
-          }
-          linkInfo.put("points", points);
-          links.add(linkInfo);
-        }
-        frames.put(frameNum, links);
+         Map.Entry frameInfo = (Map.Entry) allLinks.next();
+         int frameNum = (int) frameInfo.getKey();
+         ArrayList<Link> frameLinks = (ArrayList<Link>) frameInfo.getValue();
+         JSONArray links = new JSONArray();
+         for (Link link : frameLinks) {
+            JSONObject linkInfo = new JSONObject();
+            linkInfo.put("name", link.getName());
+            try {
+               linkInfo.put("fromVideo", link.getFromVideo().toPath());
+               linkInfo.put("toVideo", link.getToVideo().toPath());
+            }
+            catch (final Exception e)
+            {
+               // Log Error
+               e.printStackTrace();
+            }
+            linkInfo.put("toFrame", link.getToFrame());
+            JSONArray points = new JSONArray();
+            ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices();
+            for (int i = 0; i < pointArray.size(); i++) {
+               points.add(pointArray.get(i).getX());
+               points.add(pointArray.get(i).getY());
+            }
+            linkInfo.put("points", points);
+            links.add(linkInfo);
+         }
+         frames.put(frameNum, links);
       }
       try {
-        file.createNewFile();
-        FileWriter f = new FileWriter(file); 
-        f.write(frames.toJSONString());
-        System.out.println("Success");
-        f.flush();
-        f.close();
+         file.createNewFile();
+         FileWriter f = new FileWriter(file); 
+         f.write(frames.toJSONString());
+         System.out.println("Success");
+         f.flush();
+         f.close();
       }
       catch (IOException e) {
-        e.printStackTrace();
+         e.printStackTrace();
       }
    }
 }
