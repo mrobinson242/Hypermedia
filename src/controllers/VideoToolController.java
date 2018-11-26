@@ -731,13 +731,13 @@ public class VideoToolController extends AbstractController
       _primaryVideoProgressBar.setDisable(false);
 
       // Get Number of Frames
-      Duration duration = _primaryMediaPlayer.getTotalDuration();
-      int totalSeconds = (int) Math.round(duration.toSeconds());
-      int totalFrames = totalSeconds * 30;
+       Duration duration = _primaryMediaPlayer.getTotalDuration();
+       int totalSeconds = (int) Math.round(duration.toSeconds());
+       int totalFrames = totalSeconds * 30;
 
       // Set Slider Properties
       _primaryVideoSlider.setMin(MIN_FRAME);
-      _primaryVideoSlider.setMax(totalFrames);
+      _primaryVideoSlider.setMax(9000);
       _primaryVideoSlider.setValue(1);
       _primaryVideoSlider.setBlockIncrement(1.0);
       _primaryVideoSlider.setMajorTickUnit(1.0);
@@ -765,7 +765,7 @@ public class VideoToolController extends AbstractController
 
       // Set Slider Properties
       _secondaryVideoSlider.setMin(MIN_FRAME);
-      _secondaryVideoSlider.setMax(totalFrames);
+      _secondaryVideoSlider.setMax(9000);
       _secondaryVideoSlider.setValue(1);
       _secondaryVideoSlider.setBlockIncrement(1.0);
       _secondaryVideoSlider.setMajorTickUnit(1.0);
