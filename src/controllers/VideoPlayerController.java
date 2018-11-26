@@ -41,16 +41,17 @@ public class VideoPlayerController extends AbstractController
 
    /** Hyperlink File Chooser */
    private FileChooser _hyperlinkFileChooser;
-   
+
    /** Stage of the Application Window */
-   protected final Stage _primaryStage;
+   private final Stage _primaryStage;
 
    /**
     * Constructor
     *
     * @param primaryStage - The primary stage of the application
+    * @param homePageController - The Controller for the Home Page
     */
-   public VideoPlayerController(final Stage primaryStage)
+   public VideoPlayerController(final Stage primaryStage, final HomePageController homePageController)
    {
       super(FXML_NAME);
 
@@ -61,7 +62,7 @@ public class VideoPlayerController extends AbstractController
       _playButton.setText(EFontAwesome.PLAY.getCode());
       _pauseButton.setText(EFontAwesome.PAUSE.getCode());
       _stopButton.setText(EFontAwesome.STOP.getCode());
-      _openVideoButton.setText(EFontAwesome.FILE_VIDEO.getCode());
+      _openVideoButton.setText(EFontAwesome.FILE_CODE.getCode());
 
       // Button Listeners
       handlePlayButton();
@@ -85,7 +86,10 @@ public class VideoPlayerController extends AbstractController
       // Initialize File Chooser
       _hyperlinkFileChooser = new FileChooser();
 
-      // TODO: Determine the Type of Extension we want on our file
+      // Set Title of Hyperlink File Chooser Window
+      _hyperlinkFileChooser.setTitle("Load Hyperlinked Video");
+
+      // Determine the Type of Extension we want on our file
       FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
       _hyperlinkFileChooser.getExtensionFilters().add(extFilter);
 
@@ -150,9 +154,6 @@ public class VideoPlayerController extends AbstractController
       // Process Click of Open Video Button
       _openVideoButton.setOnAction(event ->
       {
-         // Set Title of Hyperlink File Chooser Window
-         _hyperlinkFileChooser.setTitle("Load Hyperlinked Video");
-
          // Get the Hyperlink Video File from the File Chooser
          final File hyperlinkVideo = _hyperlinkFileChooser.showOpenDialog(_primaryStage);
 

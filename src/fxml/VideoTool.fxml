@@ -37,19 +37,19 @@
             <Slider fx:id="_secondaryVideoSlider" prefWidth="352.0" styleClass="frameSlider" />
          </children>
       </StackPane>
-      <ListView fx:id="_selectLinkView" layoutX="925.0" layoutY="265.0" prefHeight="235.0" prefWidth="250.0" styleClass="selectLinkView" />
+      <ListView fx:id="_selectLinkView" layoutX="925.0" layoutY="296.0" prefHeight="204.0" prefWidth="250.0" styleClass="selectLinkView" />
       <Separator layoutX="900.0" orientation="VERTICAL" prefHeight="520.0" prefWidth="0.0" />
-      <Button fx:id="_saveButton" layoutX="925.0" layoutY="130.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Save File" />
-      <Button fx:id="_createLinkButton" layoutX="1015.0" layoutY="130.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Create Link " textAlignment="CENTER" wrapText="true" />
-      <Label alignment="CENTER" layoutX="925.0" layoutY="235.0" prefHeight="30.0" prefWidth="250.0" text="Link Selection" textAlignment="CENTER">
+      <Button fx:id="_saveButton" layoutX="1105.0" layoutY="70.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Save File" />
+      <Button fx:id="_createLinkButton" layoutX="1015.0" layoutY="170.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Create Link " textAlignment="CENTER" wrapText="true" />
+      <Label alignment="CENTER" layoutX="925.0" layoutY="266.0" prefHeight="30.0" prefWidth="250.0" text="Link Selection" textAlignment="CENTER">
          <font>
             <Font size="20.0" />
          </font>
       </Label>
-      <Button fx:id="_deleteLinkButton" layoutX="1105.0" layoutY="130.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Delete Link" textAlignment="CENTER" wrapText="true" />
-      <Button fx:id="_importFileButton" layoutX="925.0" layoutY="30.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Import Hyperlink File" textAlignment="CENTER" wrapText="true" />
-      <Button fx:id="_importVideoButton" layoutX="1015.0" layoutY="31.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Import Videos" textAlignment="CENTER" wrapText="true" />
-      <Button fx:id="_newFileButton" layoutX="1105.0" layoutY="31.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="New Hyperlink File" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_deleteLinkButton" layoutX="1105.0" layoutY="170.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Delete Link" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_importFileButton" layoutX="925.0" layoutY="70.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Import Hyperlink File" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_importVideoButton" layoutX="1015.0" layoutY="70.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="Import Videos" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="_newFileButton" layoutX="925.0" layoutY="170.0" mnemonicParsing="false" prefHeight="70.0" prefWidth="70.0" styleClass="awesomeButton" text="New Hyperlink File" textAlignment="CENTER" wrapText="true" />
       <HBox layoutX="339.0" layoutY="407.0" prefHeight="30.0" prefWidth="84.0">
          <children>
             <Label fx:id="_primaryVideoFrameLabel" prefHeight="30.0" text="Frame">
@@ -80,6 +80,26 @@
                </font>
                <HBox.margin>
                   <Insets left="5.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+      <HBox layoutX="925.0" layoutY="10.0" prefHeight="30.0" prefWidth="250.0">
+         <children>
+            <Label prefHeight="30.0" text="File:">
+               <font>
+                  <Font size="20.0" />
+               </font>
+            </Label>
+            <Label fx:id="_hyperlinkFilename" prefHeight="30.0" text="Document 1">
+               <font>
+                  <Font name="System Italic" size="20.0" />
+               </font>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <HBox.margin>
+                  <Insets left="20.0" />
                </HBox.margin>
             </Label>
          </children>

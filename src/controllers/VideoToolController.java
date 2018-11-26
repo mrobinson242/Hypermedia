@@ -2,7 +2,6 @@ package controllers;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +29,7 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import util.PolygonUtil;
@@ -48,7 +48,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 
 import java.io.FileNotFoundException;
 
@@ -110,6 +109,9 @@ public class VideoToolController extends AbstractController
    private Label _secondaryVideoFrame;
 
    @FXML
+   private Label _hyperlinkFilename;
+
+   @FXML
    private ListView<Link> _selectLinkView;
 
    /** FXML filename associated with this Controller */
@@ -123,6 +125,9 @@ public class VideoToolController extends AbstractController
 
    /** Home Page Controller */
    private HomePageController _homePageController;
+
+   /** Stage of the Application Window */
+   private final Stage _primaryStage;
 
    /** Primary Video File */
    private File _primaryVideo;
@@ -166,6 +171,9 @@ public class VideoToolController extends AbstractController
    public VideoToolController(final Stage primaryStage, final HomePageController homePageController)
    {
       super(FXML_NAME);
+      
+      // Initialize the Stage of the Primary Window
+      _primaryStage = primaryStage;
 
       // Initialize Controllers
       _homePageController = homePageController;
@@ -190,6 +198,7 @@ public class VideoToolController extends AbstractController
 
       // Initialize Current Hyperlink File to be null
       _currentHyperlinkFile = new File("");
+      _hyperlinkFilename.setVisible(false);
 
       // Update Icons of Buttons
       _importFileButton.setText(EFontAwesome.FILE_CODE.getCode());
@@ -202,10 +211,18 @@ public class VideoToolController extends AbstractController
       // Create ToolTips for Buttons
       Tooltip importVideoTooltip = new Tooltip("Import Video Button");
       Tooltip saveToolTip = new Tooltip("Save Button");
+      Tooltip createLinkToolTip = new Tooltip("Create Link Button");
+      Tooltip deleteLinkToolTip = new Tooltip("Delete Link Button");
+      Tooltip newFileTooltip = new Tooltip("New Hyperlink File Button");
+      Tooltip importFileTooltip = new Tooltip("Import Hyperlink File Button");
 
-      // Set Tooltips for Buttons
+      // Set ToolTips for Buttons
+      _importFileButton.setTooltip(importFileTooltip);
       _importVideoButton.setTooltip(importVideoTooltip);
       _saveButton.setTooltip(saveToolTip);
+      _newFileButton.setTooltip(newFileTooltip);
+      _createLinkButton.setTooltip(createLinkToolTip);
+      _deleteLinkButton.setTooltip(deleteLinkToolTip);
 
       // Initialize Button States
       _newFileButton.setDisable(true);
@@ -225,7 +242,9 @@ public class VideoToolController extends AbstractController
       _secondaryVideoFrame.setVisible(false);
 
       // Button Listeners
+      handleImportFileButton();
       handleImportVideoButton();
+      handleNewFileButton();
       handleCreateLinkButton();
       handleDeleteLinkButton();
       handleSaveButton();
@@ -272,7 +291,6 @@ public class VideoToolController extends AbstractController
       _primaryVideo = primaryVideo;
       _primaryVideoView.setVisible(true);
       _currentHyperlinkFile = new File("");
-
 
       try 
       {
@@ -416,6 +434,20 @@ public class VideoToolController extends AbstractController
    }
 
    /**
+    * openHyperlinkFile - Opens up the Hyperlink File
+    */
+   public void openHyperlinkFile(File file)
+   {
+       // Check if current file matches Hyperlink File
+       if(!_hyperlinkFilename.equals(file.getName()))
+       {
+          // Update Filename Label
+          _hyperlinkFilename.setVisible(true);
+          _hyperlinkFilename.setText(file.getName());
+       }
+   }
+
+   /**
     * saveDataToFile - Saves the Hyperlinks/Video Information
     *                  to the Data File
     *
@@ -423,8 +455,19 @@ public class VideoToolController extends AbstractController
     */
    public void saveDataToFile(final File file)
    {
-      // Store Data in Hyperlink File
+      // Write Data to Hyperlink File
       writeDataToFile(file);
+
+      // Check if current file matches Hyperlink File
+      if(!_hyperlinkFilename.equals(file.getName()))
+      {
+         // Update Filename Label
+         _hyperlinkFilename.setVisible(true);
+         _hyperlinkFilename.setText(file.getName());
+      }
+
+      // Enable New File Button
+      _newFileButton.setDisable(false);
    }
 
    /**
@@ -465,6 +508,33 @@ public class VideoToolController extends AbstractController
       {
          // Show the Import Video Dialog
          _importVideoDialog.showDialog();
+      });
+   }
+
+   /**
+    * handleNewFileButton - Handles the Selection of the
+    *                       New File Button
+    */
+   private void handleNewFileButton()
+   {
+      // Process Selection of the New File Button
+      _newFileButton.setOnAction(event ->
+      {
+         
+      });
+   }
+
+   /**
+    * handleImportFileButton - Handles the Selection of the
+    *                          Import File Button
+    */
+   private void handleImportFileButton()
+   {
+      // Process Selection of the Import File Button
+      _importFileButton.setOnAction(event ->
+      {
+         // Import Hyperlink File
+         _homePageController.openHyperlinkFile();
       });
    }
 
