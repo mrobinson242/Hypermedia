@@ -79,7 +79,7 @@ public class HomePageController extends AbstractController
 
       // Initialize Controllers
       _videoToolController = new VideoToolController(primaryStage, this);
-      _videoPlayerController = new VideoPlayerController();
+      _videoPlayerController = new VideoPlayerController(primaryStage);
 
       // Default to Video Tool Button Selected
       _videoToolButton.setSelected(true);
@@ -336,7 +336,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/videos");
+      sb.append("/src/videos");
 
       // Set Path to Video Files
       final File videoFile = new File(sb.toString());
@@ -364,7 +364,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/files");
+      sb.append("/src/files");
 
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());

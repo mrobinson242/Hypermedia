@@ -2,7 +2,7 @@ package controllers;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,8 +43,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
+
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * VideoToolController - Controls the User Interaction on the
@@ -756,21 +762,31 @@ public class VideoToolController extends AbstractController
     */
    private void writeDataToFile(final File file)
    {
-      // TODO: IMPLEMENT
-
       JSONObject frames = new JSONObject();
       Iterator allLinks = _frameToLinkMap.entrySet().iterator();
-      while (allLinks.hasNext()) {
+
+      // Iterate over all Links in Map
+      while (allLinks.hasNext())
+      {
          Map.Entry frameInfo = (Map.Entry) allLinks.next();
          int frameNum = (int) frameInfo.getKey();
          ArrayList<Link> frameLinks = (ArrayList<Link>) frameInfo.getValue();
          JSONArray links = new JSONArray();
-         for (Link link : frameLinks) {
+
+         // Iterate over each link
+         for (Link link : frameLinks)
+         {
+            // Create new Json Object for Link
             JSONObject linkInfo = new JSONObject();
+
+            // Store Name of Link
             linkInfo.put("name", link.getName());
-            try {
-               linkInfo.put("fromVideo", link.getFromVideo().toPath());
-               linkInfo.put("toVideo", link.getToVideo().toPath());
+
+            try 
+            {
+               // Store To/From Videos
+               linkInfo.put("fromVideo", link.getFromVideo().getAbsolutePath());
+               linkInfo.put("toVideo", link.getToVideo().getAbsolutePath());
             }
             catch (final Exception e)
             {
@@ -778,26 +794,59 @@ public class VideoToolController extends AbstractController
                e.printStackTrace();
             }
             linkInfo.put("toFrame", link.getToFrame());
+
+            // Create JsonArray to store Vertices
             JSONArray points = new JSONArray();
+
+            // Get Vertex Array associated with Link
             ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices();
-            for (int i = 0; i < pointArray.size(); i++) {
+
+            // Iterate over all the Vertices
+            for (int i = 0; i < pointArray.size(); i++)
+            {
+               // Add the X/Y Vertex Location to the JsonArray
                points.add(pointArray.get(i).getX());
                points.add(pointArray.get(i).getY());
             }
+
+            // 
             linkInfo.put("points", points);
             links.add(linkInfo);
          }
          frames.put(frameNum, links);
       }
-      try {
+
+      try 
+      {
+         // Create new File
          file.createNewFile();
-         FileWriter f = new FileWriter(file); 
-         f.write(frames.toJSONString());
+
+         // Initialize File Writer
+         FileWriter f = new FileWriter(file);
+
+         // Create new Gson Object
+         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+         // Parse Json Object
+         JsonParser jp = new JsonParser();
+         JsonElement je = jp.parse(frames.toJSONString());
+
+         // Convert to Formatted Json String
+         String prettyJsonString = gson.toJson(je);
+
+         // Write out Data to File
+         f.write(prettyJsonString);
+
+         // Log File Write Success
          System.out.println("Success");
+
+         // Cleanup File Writer
          f.flush();
          f.close();
       }
-      catch (IOException e) {
+      catch (IOException e)
+      {
+         // Log Error
          e.printStackTrace();
       }
    }

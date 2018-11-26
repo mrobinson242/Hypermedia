@@ -1,8 +1,16 @@
 package controllers;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import enums.EFontAwesome;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Slider;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 /**
  * VideoPlayerController - Controls the User Interaction on the
@@ -19,25 +27,80 @@ public class VideoPlayerController extends AbstractController
    @FXML
    private Button _stopButton;
 
+   @FXML
+   private Button _openVideoButton;
+
+   @FXML
+   private Slider _videoSlider;
+
+   @FXML
+   private ProgressBar _videoProgressBar;
+
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "VideoPlayer.fxml";
 
+   /** Hyperlink File Chooser */
+   private FileChooser _hyperlinkFileChooser;
+   
+   /** Stage of the Application Window */
+   protected final Stage _primaryStage;
+
    /**
     * Constructor
+    *
+    * @param primaryStage - The primary stage of the application
     */
-   public VideoPlayerController()
+   public VideoPlayerController(final Stage primaryStage)
    {
       super(FXML_NAME);
+
+      // Initialize the Stage of the Primary Window
+      _primaryStage = primaryStage;
 
       // Update Icons of Buttons
       _playButton.setText(EFontAwesome.PLAY.getCode());
       _pauseButton.setText(EFontAwesome.PAUSE.getCode());
       _stopButton.setText(EFontAwesome.STOP.getCode());
+      _openVideoButton.setText(EFontAwesome.FILE_VIDEO.getCode());
 
       // Button Listeners
       handlePlayButton();
       handlePauseButton();
       handleStopButton();
+      handleOpenVideoButton();
+
+      // Initialize Slider States
+      _videoSlider.setDisable(true);
+      _videoProgressBar.setDisable(true);
+
+      // Initialize the Hyperlink File Selector
+      initHyperlinkFileChooser();
+   }
+
+   /**
+    * initHyperlinkFileChooser - Initializes the Hyperlink File Chooser
+    */
+   private void initHyperlinkFileChooser()
+   {
+      // Initialize File Chooser
+      _hyperlinkFileChooser = new FileChooser();
+
+      // TODO: Determine the Type of Extension we want on our file
+      FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+      _hyperlinkFileChooser.getExtensionFilters().add(extFilter);
+
+      // Get Current Directory
+      Path currentRelativePath = Paths.get("");
+      String s = currentRelativePath.toAbsolutePath().toString();
+
+      // Create File Path
+      StringBuilder sb = new StringBuilder();
+      sb.append(s);
+      sb.append("/src/files");
+
+      // Set Path to Video Files
+      final File hyperlinkFile = new File(sb.toString());
+      _hyperlinkFileChooser.setInitialDirectory(hyperlinkFile);
    }
 
    /**
@@ -77,5 +140,32 @@ public class VideoPlayerController extends AbstractController
          // TODO: Remove Debug Stmt
          System.out.println("Stop Button Selection");
       });
+   }
+
+   /**
+    * handleOpenVideoButton - Listener for the Open Video Button Selection
+    */
+   private void handleOpenVideoButton()
+   {
+      // Process Click of Open Video Button
+      _openVideoButton.setOnAction(event ->
+      {
+         // Set Title of Hyperlink File Chooser Window
+         _hyperlinkFileChooser.setTitle("Load Hyperlinked Video");
+
+         // Get the Hyperlink Video File from the File Chooser
+         final File hyperlinkVideo = _hyperlinkFileChooser.showOpenDialog(_primaryStage);
+
+         // Load the Video into the Video Player
+         loadVideo();
+      });
+   }
+
+   /**
+    * loadVideo
+    */
+   private void loadVideo()
+   {
+      // TODO: Implement
    }
 }
