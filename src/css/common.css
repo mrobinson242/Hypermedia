@@ -73,6 +73,13 @@
    -fx-text-fill: tundora;
 }
 
+/** CSS for Disabled Menu Item Label */
+.menu-item:disabled .label
+{
+   -fx-opacity: 1.0;
+   -fx-text-fill: black;
+}
+
 /** CSS for Vertical Scroll Bar */
 .scroll-bar:vertical
 {

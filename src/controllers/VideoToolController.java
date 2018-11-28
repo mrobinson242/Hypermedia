@@ -10,6 +10,7 @@ import data.Link;
 import data.Point;
 import dialogs.ImportVideoDialog;
 import dialogs.LinkCreationDialog;
+import dialogs.SaveDialog;
 import dialogs.interfaces.IDialog;
 import enums.EFontAwesome;
 import javafx.beans.value.ChangeListener;
@@ -150,6 +151,9 @@ public class VideoToolController extends AbstractController
    /** Dialog Window for Importing Videos */
    private IDialog _importVideoDialog;
 
+   /** Dialog Window for Saving a File */
+   private IDialog _saveDialog;
+
    /** Polygon Math Utility Helper */
    private PolygonUtil _polygonUtil;
 
@@ -191,6 +195,7 @@ public class VideoToolController extends AbstractController
       // Initialize Dialogs
       _linkCreationDialog = new LinkCreationDialog(primaryStage, this);
       _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController);
+      _saveDialog = new SaveDialog(primaryStage, homePageController);
 
       // Initialize Video Files to be null
       _primaryVideo = new File("");
@@ -436,7 +441,7 @@ public class VideoToolController extends AbstractController
    /**
     * openHyperlinkFile - Opens up the Hyperlink File
     */
-   public void openHyperlinkFile(File file)
+   public void openHyperlinkFile(File file, Map<Integer, ArrayList<Link>> frameToLinkMap)
    {
        // Check if current file matches Hyperlink File
        if(!_hyperlinkFilename.equals(file.getName()))
@@ -444,6 +449,30 @@ public class VideoToolController extends AbstractController
           // Update Filename Label
           _hyperlinkFilename.setVisible(true);
           _hyperlinkFilename.setText(file.getName());
+
+          // Update Frame To Link Map
+          _frameToLinkMap = frameToLinkMap;
+
+          // Iterate over each Frame in Map
+          for(final Integer frame : _frameToLinkMap.keySet())
+          {
+             // Get the Link List
+             ArrayList<Link> linkList = _frameToLinkMap.get(frame);
+
+             // Iterate over the Link List
+             for(final Link link : linkList)
+             {
+                // Add Link to ListView
+                _selectLinkView.getItems().add(link);
+             }
+          }
+
+          // Update Links
+          displayLinks();
+       }
+       else
+       {
+          // TODO: Handle Case where same file is open in Video Player
        }
    }
 
@@ -520,7 +549,8 @@ public class VideoToolController extends AbstractController
       // Process Selection of the New File Button
       _newFileButton.setOnAction(event ->
       {
-         
+         // Show the Save File Dialog
+         _saveDialog.showDialog();
       });
    }
 
@@ -774,55 +804,6 @@ public class VideoToolController extends AbstractController
       // Show Secondary Video Frame Labels
       _secondaryVideoFrame.setVisible(true);
       _secondaryVideoFrameLabel.setVisible(true);
-   }
-
-   /**
-    * uploadDataFromFile - Reads in Data from Hyperlink File
-    */
-   private void uploadDataFromFile(final File file)
-   {
-      // TODO: IMPLEMENT
-      _frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
-      JSONParser parser = new JSONParser();
-      try {
-         Object obj = parser.parse(new FileReader(file));
-         JSONObject jsonObject = (JSONObject) obj;
-         Iterator<String> frames = jsonObject.keySet().iterator();
-         while(frames.hasNext()) {
-            String frame = frames.next();
-            JSONArray frameLinks = (JSONArray) jsonObject.get(frame);
-            Iterator allLinks = frameLinks.iterator();
-            ArrayList<Link> linkList = new ArrayList<Link>();
-            while (allLinks.hasNext()) {
-               JSONObject linkInfo = (JSONObject) allLinks.next();
-               String name = (String) linkInfo.get("name");
-               String toVideo = (String) linkInfo.get("toVideo");
-               String fromVideo = (String) linkInfo.get("fromVideo");
-               int toFrame = (int) linkInfo.get("toFrame");
-               JSONArray pointInfo = (JSONArray) linkInfo.get("points");
-               Iterator points = pointInfo.iterator();
-               ArrayList<Double> pList = new ArrayList<Double>();
-               while (points.hasNext()) {
-                  pList.add((Double) points.next());
-               }
-               Link now = new Link(name, fromVideo, toVideo, toFrame, pList);
-               linkList.add(now);
-            }
-            _frameToLinkMap.put(Integer.parseInt(frame), linkList);
-         }
-      } 
-      catch (FileNotFoundException e)
-      {
-         e.printStackTrace();
-      }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
-      catch (ParseException e)
-      {
-         e.printStackTrace();
-      } 
    }
 
    /**

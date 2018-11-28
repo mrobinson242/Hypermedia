@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="209.0" prefWidth="490.0" styleClass="dialogPane" type="Pane" xmlns="http://javafx.com/javafx/" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Button fx:id="_saveButton" alignment="CENTER" layoutX="25.0" layoutY="120.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="130.0" styleClass="dialogButton" text="Save" textAlignment="CENTER" />
+      <Button fx:id="_doNotSaveButton" alignment="CENTER" layoutX="180.0" layoutY="120.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="130.0" styleClass="dialogButton" text="Do Not Save" textAlignment="CENTER" />
+      <Button fx:id="_cancelButton" layoutX="335.0" layoutY="120.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="130.0" styleClass="dialogButton" text="Cancel" textAlignment="CENTER" />
+      <Label alignment="CENTER" layoutX="25.0" layoutY="40.0" prefHeight="40.0" prefWidth="440.0" text="Do You want to save changes?" textAlignment="CENTER">
+         <font>
+            <Font size="26.0" />
+         </font>
+      </Label>
+   </children>
+</fx:root>
