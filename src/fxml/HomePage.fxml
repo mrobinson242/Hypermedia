@@ -18,12 +18,16 @@
                   <MenuItem fx:id="_importSecondaryVideoItem" mnemonicParsing="false" text="Import Secondary Video" />
                   <MenuItem fx:id="_saveMenuItem" mnemonicParsing="false" text="Save" />
                   <MenuItem fx:id="_saveAsMenuItem" mnemonicParsing="false" text="Save As" />
-                  <MenuItem fx:id="_exitItem" mnemonicParsing="false" text="Exit" />
+                  <MenuItem fx:id="_exitMenuItem" mnemonicParsing="false" text="Exit" />
                </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Option">
                <items>
-                  <MenuItem fx:id="_createLinkItem" mnemonicParsing="false" text="Create Link" />
+                  <MenuItem fx:id="_createLinkMenuItem" mnemonicParsing="false" text="Create Link" />
+                  <MenuItem fx:id="_deleteLinkMenuItem" mnemonicParsing="false" text="Delete Link" />
+                  <MenuItem fx:id="_playVideoMenuItem" mnemonicParsing="false" text="Play Video" />
+                  <MenuItem fx:id="_pauseVideoMenuItem" mnemonicParsing="false" text="Pause Video" />
+                  <MenuItem fx:id="_stopVideoMenuItem" mnemonicParsing="false" text="Stop Video" />
                </items></Menu>
             <Menu mnemonicParsing="false" text="Help" />
          </menus>

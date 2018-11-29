@@ -73,6 +73,13 @@
    -fx-text-fill: tundora;
 }
 
+/** CSS for Disabled Menu Item Label */
+.menu-item:disabled .label
+{
+   -fx-opacity: 1.0;
+   -fx-text-fill: black;
+}
+
 /** CSS for Vertical Scroll Bar */
 .scroll-bar:vertical
 {
@@ -254,4 +261,72 @@
 {
    -fx-border-color: silverChalice;
    -fx-border-width: 1;
+}
+
+/** CSS for Link Selection Table */
+.linkTableView
+{
+   -fx-text-fill: textColor;
+   -fx-background-color: tundora;
+   -fx-border-color: transparent;
+}
+
+/** CSS for Link Selection Table Column Header */
+.linkTableView .column-header
+{
+   -fx-alignment: CENTER;
+   -fx-background-color: tundora;
+   -fx-border-color: textColor;
+}
+
+/** CSS for Link Selection Table Cell */
+.linkTableView .table-cell
+{
+   -fx-text-fill: textColor;
+   -fx-alignment: CENTER;
+   -fx-border-color: textColor transparent textColor textColor;
+}
+
+/** CSS for Link Selection Table Cell (Odd) */
+.table-row-cell:odd
+{
+   -fx-background-color: tundora;
+}
+
+/** CSS for Link Selection Table Cell (Even) */
+.table-row-cell:even
+{
+   -fx-background-color: mineShaft;
+}
+
+/** CSS for a Selected Link */
+#linkSelected
+{
+   -fx-stroke: dodgerBlue;
+   -fx-stroke-width: 3;
+   -fx-fill: transparent;
+}
+
+/** CSS for a Selected Link */
+#linkUnselected
+{
+   -fx-stroke: tundora;
+   -fx-stroke-width: 2;
+   -fx-fill: transparent;
+}
+
+/** CSS for an Editable Link */
+#linkEditable
+{
+   -fx-fill: transparent;
+   -fx-stroke: dodgerBlue;
+   -fx-stroke-width: 2.0; 
+}
+
+/** CSS for an Uneditable Link */
+#linkUneditable
+{
+   -fx-fill: transparent;
+   -fx-stroke: transparent;
+   -fx-stroke-width: 0.0; 
 }

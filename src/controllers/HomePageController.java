@@ -1,9 +1,22 @@
 package controllers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import data.Link;
 import enums.EHypermediaTab;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
@@ -43,10 +56,22 @@ public class HomePageController extends AbstractController
    private MenuItem _saveAsMenuItem;
 
    @FXML
-   private MenuItem _createLinkItem;
+   private MenuItem _createLinkMenuItem;
 
    @FXML
-   private MenuItem _exitItem;
+   private MenuItem _deleteLinkMenuItem;
+
+   @FXML
+   private MenuItem _playVideoMenuItem;
+
+   @FXML
+   private MenuItem _pauseVideoMenuItem;
+
+   @FXML
+   private MenuItem _stopVideoMenuItem;
+
+   @FXML
+   private MenuItem _exitMenuItem;
 
    @FXML
    private ToggleButton _videoToolButton;
@@ -104,6 +129,15 @@ public class HomePageController extends AbstractController
       _selectedTab = EHypermediaTab.VIDEO_TOOL;
       _videoToolButton.setSelected(true);
 
+      // Disable Unavailable Video Tool Menu Items
+      _createLinkMenuItem.setDisable(true);
+      _deleteLinkMenuItem.setDisable(true);
+
+      // Disable Video Player Menu Items
+      _playVideoMenuItem.setDisable(true);
+      _pauseVideoMenuItem.setDisable(true);
+      _stopVideoMenuItem.setDisable(true);
+
       // Set Video Tool Pane First
       _contentPane.getChildren().add(_videoToolController.getPane());
 
@@ -130,12 +164,20 @@ public class HomePageController extends AbstractController
       handleSaveAsSelection();
       handleExitSelection();
 
-      // Set Accelerators
+      // Set File Menu Accelerators
       _newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
       _openFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
       _importPrimaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
       _importSecondaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN));
       _saveMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN));
+      _exitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN));
+
+      // Set Option Menu Accelerators
+      _createLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.ALT_DOWN));
+      _deleteLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.ALT_DOWN));
+      _playVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN));
+      _pauseVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.U, KeyCombination.ALT_DOWN));
+      _stopVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN));
    }
 
    /**
@@ -189,11 +231,18 @@ public class HomePageController extends AbstractController
       // Null Check Hyperlink File
       if(hyperlinkFile != null)
       {
+         // Upload Data from File
+         Map<Integer, ArrayList<Link>> frameToLinkMap = uploadDataFromFile(hyperlinkFile);
+
          // Check if Video Tool Tab Selected
          if(EHypermediaTab.VIDEO_TOOL.equals(_selectedTab))
          {
             // Open up the Hyperlink File in the Video Tool
-            _videoToolController.openHyperlinkFile(hyperlinkFile);
+            _videoToolController.openHyperlinkFile(hyperlinkFile, frameToLinkMap);
+         }
+         else
+         {
+            // TODO: JOSH PLEASE IMPLEMENT
          }
       }
    }
@@ -283,6 +332,8 @@ public class HomePageController extends AbstractController
       return _currentVideoPlayerFile;
    }
 
+
+
    /**
     * handleVideoToolButtonSelection - Handles the Selection of
     *                                  the Video Tool Toggle Button
@@ -303,9 +354,14 @@ public class HomePageController extends AbstractController
          _videoPlayerButton.setSelected(false);
 
          // Enable Menu Items
-         _createLinkItem.setDisable(false);
+         _createLinkMenuItem.setDisable(false);
          _saveMenuItem.setDisable(false);
          _saveAsMenuItem.setDisable(false);
+
+         // Disable Menu Items
+         _playVideoMenuItem.setDisable(true);
+         _pauseVideoMenuItem.setDisable(true);
+         _stopVideoMenuItem.setDisable(true);
       });
    }
 
@@ -331,8 +387,17 @@ public class HomePageController extends AbstractController
          _videoToolButton.setSelected(false);
          _videoPlayerButton.setSelected(true);
 
+         // Enable Menu Items
+         if(!_currentVideoPlayerFile.getName().equals(""))
+         {
+            // Enable Menu Items
+            _playVideoMenuItem.setDisable(false);
+            _pauseVideoMenuItem.setDisable(false);
+            _stopVideoMenuItem.setDisable(false);
+         }
+
          // Disable Menu Items
-         _createLinkItem.setDisable(true);
+         _createLinkMenuItem.setDisable(true);
          _saveMenuItem.setDisable(true);
          _saveAsMenuItem.setDisable(true);
       });
@@ -345,7 +410,7 @@ public class HomePageController extends AbstractController
    private void createLinkSelection()
    {
       // Process Selection
-      _createLinkItem.setOnAction(event ->
+      _createLinkMenuItem.setOnAction(event ->
       {
          // TODO: Implement
       });
@@ -413,7 +478,7 @@ public class HomePageController extends AbstractController
    private void handleExitSelection()
    {
       // Process Selection of Exit Menu Item
-      _exitItem.setOnAction(event ->
+      _exitMenuItem.setOnAction(event ->
       {
          // Exit Application
          System.exit(0);
@@ -529,5 +594,69 @@ public class HomePageController extends AbstractController
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());
       _hyperlinkFileChooser.setInitialDirectory(hyperlinkFile);
+   }
+
+   /**
+    * uploadDataFromFile - Reads in Data from Hyperlink File
+    */
+   private Map<Integer, ArrayList<Link>> uploadDataFromFile(final File file)
+   {
+      // Initialize Frame To Link Map
+      Map<Integer, ArrayList<Link>> frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
+
+      // Initialize JSON Parser
+      JSONParser parser = new JSONParser();
+
+      try 
+      {
+         Object obj = parser.parse(new FileReader(file));
+         JSONObject jsonObject = (JSONObject) obj;
+         Iterator<String> frames = jsonObject.keySet().iterator();
+
+         // Iterate over all the Frames
+         while(frames.hasNext())
+         {
+            String frame = frames.next();
+            JSONArray frameLinks = (JSONArray) jsonObject.get(frame);
+            Iterator allLinks = frameLinks.iterator();
+            ArrayList<Link> linkList = new ArrayList<Link>();
+            while (allLinks.hasNext())
+            {
+               JSONObject linkInfo = (JSONObject) allLinks.next();
+               String name = (String) linkInfo.get("name");
+               String toVideo = (String) linkInfo.get("toVideo");
+               String fromVideo = (String) linkInfo.get("fromVideo");
+               //int toFrame = (int) linkInfo.get("toFrame");
+               int toFrame = 0;
+               JSONArray pointInfo = (JSONArray) linkInfo.get("points");
+               Iterator points = pointInfo.iterator();
+               ArrayList<Double> pList = new ArrayList<Double>();
+
+               // Iterate over the Points
+               while (points.hasNext())
+               {
+                  pList.add((Double) points.next());
+               }
+
+               Link now = new Link(name, 0, 0, fromVideo, toVideo, toFrame, pList);
+               linkList.add(now);
+            }
+            frameToLinkMap.put(Integer.parseInt(frame), linkList);
+         }
+      } 
+      catch (FileNotFoundException e)
+      {
+         e.printStackTrace();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+      catch (ParseException e)
+      {
+         e.printStackTrace();
+      }
+
+      return frameToLinkMap;
    }
 }

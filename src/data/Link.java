@@ -2,22 +2,14 @@ package data;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
-import javafx.scene.Cursor;
+import controllers.LinkBox;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Group;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.StrokeType;
 
 /**
  * Link - Implementation of a HyperLink Object
@@ -25,16 +17,16 @@ import javafx.scene.shape.StrokeType;
 public class Link 
 {
    /** Name of the Link Object */
-   private String _name;
+   private final SimpleStringProperty _linkName;
 
-   /** Bounding Group for the Link */
-   private Group _linkGroup;
+   /** Start Frame of the Link */
+   private final SimpleIntegerProperty _startFrame;
 
-   /** Bounding Box for the Link */
-   private Polygon _boundingBox;
+   /** End Frame of the Link */
+   private final SimpleIntegerProperty _endFrame;
 
-   /** Bounding Box Editable Indicator */
-   private Boolean _isEditable;
+   /** Link is Selected in Table Indicator */
+   private Boolean _isSelected;
 
    /** File of the Video the Hyperlink points from */
    private File _fromVideo;
@@ -45,46 +37,74 @@ public class Link
    /** Frame of the Video the Hyperlink points to */
    private int _toFrame;
 
+   /** Current Selected Frame in Primary Video */
+   private int _currentFrame;
+
+   /** Mapping of Frames to Bounding Box */
+   private Map<Integer, LinkBox> _frameToBoxMap;
+
    /**
     * Constructor
-    * 
-    * @param name - The name of the Link
+    *
+    * @param linkName - The name of the Link
+    * @param startFrame - The Start Frame of the Link
+    * @param endFrame - The End Frame of the Link
     */
-   public Link(final String name)
+   public Link(final String linkName, final int startFrame, final int endFrame, final int currentFrame)
    {
       // Initialize Link Name
-      _name = name;
+      _linkName = new SimpleStringProperty(linkName);
 
-      // Initialize isEditable Indicator
-      _isEditable = false;
+      // Initialize Start/End Frame
+      _startFrame = new SimpleIntegerProperty(startFrame);
+      _endFrame = new SimpleIntegerProperty(endFrame);
 
-      // Initialize Polygon for Bounding Box
-      _boundingBox = createBoundingArea();
+      // Initialize the Current Frame
+      _currentFrame = currentFrame;
+
+      // Initialize To Frame
+      _toFrame = 0;
 
       // Initialize To/From Videos
       _toVideo = new File("");
       _fromVideo = new File("");
 
-      // Initialize To Frame
-      _toFrame = 0;
+      // Initialize Selected Indicator
+      _isSelected = false;
 
-      // Initialize Bounding 
-      _linkGroup = new Group();
-      _linkGroup.getChildren().add(_boundingBox);
-      _linkGroup.getChildren().addAll(createBoxAnchors(_boundingBox.getPoints()));
+      // Initialize Frame to Link Map
+      _frameToBoxMap = new HashMap<Integer, LinkBox>();
+
+      // Iterate over each Frame
+      for(int i = startFrame; i <= endFrame; ++i)
+      {
+         // Create a New Link Bounding Box
+         LinkBox linkBox = new LinkBox();
+
+         // Add Bounding Box to Map
+         _frameToBoxMap.put(i, linkBox);
+      }
    }
 
-
-   public Link(String name, String fromVideo, String toVideo, int toFrame, ArrayList<Double> pos)
+   /**
+    * Constructor
+    *
+    * @param name
+    * @param startFrame
+    * @param endFrame
+    * @param fromVideo
+    * @param toVideo
+    * @param toFrame
+    * @param pos
+    */
+   public Link(String name, final int startFrame, final int endFrame, String fromVideo, String toVideo, int toFrame, ArrayList<Double> pos)
    {
       // Initialize Link Name
-      _name = name;
+      _linkName = new SimpleStringProperty(name);
 
-      // Initialize isEditable Indicator
-      _isEditable = false;
-
-      // Initialize Polygon for Bounding Box
-      _boundingBox = createBoundingArea(pos);
+      // Initialize Start/End Frame
+      _startFrame = new SimpleIntegerProperty(startFrame);
+      _endFrame = new SimpleIntegerProperty(endFrame);
 
       // Initialize To/From Videos
       _toVideo = new File(toVideo);
@@ -92,70 +112,57 @@ public class Link
 
       // Initialize To Frame
       _toFrame = toFrame;
-
-      // Initialize Bounding 
-      _linkGroup = new Group();
-      _linkGroup.getChildren().add(_boundingBox);
-      _linkGroup.getChildren().addAll(createBoxAnchors(_boundingBox.getPoints()));
    }
 
    /**
-    * getName - Gets the Name of the Link
+    * containsFrame - Checks if Link exists in Current Frame
+    *
+    * @param frameNum - The Currently Displayed Frame
+    * @return boolean
+    */
+   public boolean containsFrame(final int frameNum)
+   {
+      // Initialize Indicator
+      boolean isInFrame = false;
+
+      // Check if Link is within bounds of frame
+      if((_startFrame.intValue() <= frameNum) && (frameNum <= _endFrame.intValue()))
+      {
+         // Link exists inside current frame
+         isInFrame = true;
+      }
+
+      return isInFrame;
+   }
+
+   /**
+    * getLinkName - Get the Link Name
     *
     * @return String
     */
-   public String getName()
+   public String getLinkName()
    {
-      return _name;
+      return _linkName.get();
    }
 
    /**
-    * getBoundingGroup - Gets the Bounding Group (Box and Anchors)
-    *                    associated with the Link
-    *
-    * @return Group - The Bounding Box
+    * getStartFrame - Gets the Start Frame
+    *                 for the Link
+    * @return Integer
     */
-   public Group getBoundingGroup()
+   public Integer getStartFrame()
    {
-      return _linkGroup;
+      return _startFrame.get();
    }
 
    /**
-    * getBoundingBox - Gets the Bounding Box associated
-    *                  with the Link
-    *
-    * @return Polygon
+    * getEndFrame - Gets the End Frame
+    *               for the Link
+    * @return Integer
     */
-   public Polygon getBoundingBox()
+   public Integer getEndFrame()
    {
-      return _boundingBox;
-   }
-
-   /**
-    * getVertices - Gets the Vertices of the Polygon
-    *
-    * @return List<Point>
-    */
-   public List<Point> getVertices()
-   {
-      // Initialize List of Vertices
-      final List<Point> vertices = new ArrayList<Point>();
-
-      // Iterate over all the points in the Polygon
-      for(int i=0; i < _boundingBox.getPoints().size(); i+=2)
-      {
-         // Get X/Y of Vertex from Polygon Bounding Box
-         double x = _boundingBox.getPoints().get(i);
-         double y = _boundingBox.getPoints().get(i+1);
-
-         // Create new Point
-         Point p = new Point(x,y);
-
-         // Add Point to List
-         vertices.add(p);
-      }
-
-      return vertices;
+      return _endFrame.get();
    }
 
    /**
@@ -186,6 +193,57 @@ public class Link
    public int getToFrame()
    {
       return _toFrame;
+   }
+
+   /**
+    * getBoundingGroup - Get the Bounding Group for the Link's
+    *                    Bounding Box at the associated Frame
+    *                    
+    * @return Group
+    */
+   public Group getBoundingGroup(final int frameNum)
+   {
+      // Initialize Bounding Group
+      Group boundingGroup = new Group();
+
+      synchronized (_frameToBoxMap)
+      {
+         // Get the Link Box Associated with the Frame
+         LinkBox linkBox = _frameToBoxMap.get(frameNum);
+
+         // Null Check Link Box
+         if(linkBox != null)
+         {
+            boundingGroup = linkBox.getBoundingGroup();
+         }
+      }
+
+      return boundingGroup;
+   }
+
+   /**
+    * getVertices - Gets the Vertices of the Polygon
+    *
+    * @return List<Point>
+    */
+   public List<Point> getVertices(final int frameNum)
+   {
+      // Initialize List of Vertices
+      List<Point> vertices = new ArrayList<Point>();
+
+      synchronized (_frameToBoxMap)
+      {
+         // Get the Link Box Associated with the Frame
+         LinkBox linkBox = _frameToBoxMap.get(frameNum);
+
+         // Null Check Link Box
+         if(linkBox != null)
+         {
+            vertices = linkBox.getVertices();
+         }
+      }
+
+      return vertices;
    }
 
    /**
@@ -221,232 +279,99 @@ public class Link
    }
 
    /**
-    * setIsEditable - Sets the Is Editable Indicator
+    * setIsSelected - Update whether the Link is Selected
     *
-    * @param isEditable - Boolean Indicator
+    * @param isSelected - Selection Indication
     */
-   public void setIsEditable(final boolean isEditable)
+   public void setIsSelected(final boolean isSelected)
    {
-      _isEditable = isEditable;
+      // Update Selected Indicator
+      _isSelected = isSelected;
+
+      // Update Editable State of Link
+      updateEditableState();
+
+      // Update Style of Bounding Box
+      updateBoundingBoxStyle(isSelected);
    }
 
    /**
-    * createBoundingArea - Creates a Default Bounding Box
-    *                      in the center of the Primary
-    *                      Video View
-    * @return
+    * updateCurrentFrame
     */
-   private Polygon createBoundingArea()
+   public void updateCurrentFrame(final int frameNum)
    {
-      // Initialize Polygon
-      Polygon polygon = new Polygon();
+      // Updates the Current Frame
+      _currentFrame = frameNum;
 
-      // Initialize Points of Rectangle
-      final Point p1 = new Point(175.0, 125.0);
-      final Point p2 = new Point(225.0, 125.0);
-      final Point p3 = new Point(225.0, 175.0);
-      final Point p4 = new Point(175.0, 175.0);
+      // Update Editable State of Link
+      updateEditableState();
 
-      // Add Initial Points to Polygon
-      polygon.getPoints().addAll(p1.getX(), p1.getY(),
-                                 p2.getX(), p2.getY(),
-                                 p3.getX(), p3.getY(),
-                                 p4.getX(), p4.getY());
-
-      // Initialize Polygon Attributes
-      polygon.setStroke(Color.FORESTGREEN);
-      polygon.setStrokeWidth(2);
-      polygon.setFill(Color.TRANSPARENT);
-
-      return polygon;
-   }
-
-   private Polygon createBoundingArea(ArrayList<Double> pos) 
-   {
-      Polygon polygon = new Polygon();
-      for (Double p : pos) {
-        polygon.getPoints().add(p);
-      }
-      polygon.setStroke(Color.FORESTGREEN);
-      polygon.setStrokeWidth(2);
-      polygon.setFill(Color.TRANSPARENT);
-      
-      return polygon;
+      // Update Style of Bounding Box
+      updateBoundingBoxStyle(_isSelected);
    }
 
    /**
-    * createBoxAnchors
-    *
-    * @param points
-    * @return ObservableList<BoxAnchor>
+    * updateBoundingBoxStyle - Updates the CSS of the Bounding Box
     */
-   private ObservableList<BoxAnchor> createBoxAnchors(final ObservableList<Double> points) 
+   public void updateBoundingBoxStyle(final boolean isSelected)
    {
-      ObservableList<BoxAnchor> anchors = FXCollections.observableArrayList();
-
-      // Iterate over Points
-      for (int i = 0; i < points.size(); i+=2)
+      synchronized (_frameToBoxMap)
       {
-        final int idx = i;
+         // Get the Link Box Associated with the Frame
+         LinkBox linkBox = _frameToBoxMap.get(_currentFrame);
 
-        DoubleProperty xProperty = new SimpleDoubleProperty(points.get(i));
-        DoubleProperty yProperty = new SimpleDoubleProperty(points.get(i + 1));
+         // Null Check Link Box
+         if(linkBox != null)
+         {
+            // Check Link Selection Indicator
+            if(isSelected)
+            {
+               // Update Bounding Box Style
+               linkBox.getBoundingBox().setId("linkSelected");
 
-        xProperty.addListener(new ChangeListener<Number>()
-        {
-          @Override public void changed(ObservableValue<? extends Number> ov, Number oldX, Number x)
-          {
-             if(_isEditable)
-             {
-                points.set(idx, (double) x);
-             }
-          }
-        });
+               // Update Bounding Box Anchors Style
+               linkBox.updateBoxAnchors();
+            }
+            else
+            {
+               // Update Bounding Box Style
+               linkBox.getBoundingBox().setId("linkUnselected");
 
-        yProperty.addListener(new ChangeListener<Number>()
-        {
-          @Override public void changed(ObservableValue<? extends Number> ov, Number oldY, Number y)
-          {
-             if(_isEditable)
-             {
-                points.set(idx + 1, (double) y);
-             }
-          }
-        });
-
-        anchors.add(new BoxAnchor(Color.GOLD, xProperty, yProperty));
+               // Update Bounding Box Anchors Style
+               linkBox.updateBoxAnchors();
+            }
+         }
       }
-
-      return anchors;
-    }
-   
-   /**
-    * isInsidePolygon
-    */
-   private void isInsidePolygon()
-   {
-      
    }
 
    /**
-    * Box Anchor - A Draggable Point for the Bounding Box
+    * updateEditableState - Updates if the Link can be Edited
     */
-   private class BoxAnchor extends Circle
+   private void updateEditableState()
    {
-      private final DoubleProperty x, y;
-
-      /**
-       * Constructor
-       */
-      public BoxAnchor(Color color, DoubleProperty x, DoubleProperty y)
+      synchronized (_frameToBoxMap)
       {
-         super(x.get(), y.get(), 10);
+         // Get the Link Box Associated with the Frame
+         LinkBox linkBox = _frameToBoxMap.get(_currentFrame);
 
-         setFill(Color.TRANSPARENT);
-         setStroke(color);
-         setStrokeWidth(0.1);
-         setStrokeType(StrokeType.OUTSIDE);
-
-         this.x = x;
-         this.y = y;
-
-         x.bind(centerXProperty());
-         y.bind(centerYProperty());
-         enableDrag();
-      }
-
-      /**
-       * enableDrage
-       */
-      private void enableDrag()
-      {
-         final Point dragDelta = new Point();
-
-         // Mouse Press Listener
-         setOnMousePressed(new EventHandler<MouseEvent>()
+         // Null Check Link Box
+         if(linkBox != null)
          {
-           @Override public void handle(final MouseEvent mouseEvent)
-           {
-              if(_isEditable)
-              {
-                 // record a delta distance for the drag and drop operation.
-                 dragDelta.setX(getCenterX() - mouseEvent.getX());
-                 dragDelta.setY(getCenterY() - mouseEvent.getY());
-                 getScene().setCursor(Cursor.MOVE);
-              }
-           }
-         });
+            // If Link is Selected and Current Frame is either Start/End Frame
+            if(_isSelected && (_startFrame.intValue() == _currentFrame) || (_endFrame.intValue() == _currentFrame))
+            {
+               // Allow Link to be edited
+               linkBox.setIsEditable(true);
+            }
+            else
+            {
+               // Disallow Link Edits
+               linkBox.setIsEditable(false);
+            }
 
-         // Mouse Release Listener
-         setOnMouseReleased(new EventHandler<MouseEvent>()
-         {
-           @Override public void handle(final MouseEvent mouseEvent)
-           {
-              if(_isEditable)
-              {
-                 getScene().setCursor(Cursor.HAND);
-              }
-           }
-         });
-
-         // Mouse Dragged Listener
-         setOnMouseDragged(new EventHandler<MouseEvent>()
-         {
-           @Override public void handle(final MouseEvent mouseEvent)
-           {
-              // Check if Anchor is allowed to be Moved
-              if(_isEditable)
-              {
-                 // Calculate new X/Y Position
-                 double newX = mouseEvent.getX() + dragDelta.getX();
-                 double newY = mouseEvent.getY() + dragDelta.getY();
-
-                 // Check if Anchor is within confines
-                 // of Primary Video Pane (X Dimension)
-                 if (newX > 0 && newX < 400)
-                 {
-                    // Update X Position
-                    setCenterX(newX);
-                 }
-
-                 // Check if Anchor is within confines
-                 // of Primary Video Pane (Y Dimension)
-                 if (newY > 0 && newY < 300)
-                 {
-                    // Update Y Position
-                    setCenterY(newY);
-                 }
-              }
-           }
-         });
-
-         setOnMouseEntered(new EventHandler<MouseEvent>()
-         {
-           @Override public void handle(MouseEvent mouseEvent)
-           {
-              if(_isEditable)
-              {
-                 if (!mouseEvent.isPrimaryButtonDown())
-                 {
-                   getScene().setCursor(Cursor.HAND);
-                 }
-              }
-           }
-         });
-
-         setOnMouseExited(new EventHandler<MouseEvent>()
-         {
-           @Override public void handle(MouseEvent mouseEvent)
-           {
-              if(_isEditable)
-              {
-                 if (!mouseEvent.isPrimaryButtonDown())
-                 {
-                   getScene().setCursor(Cursor.DEFAULT);
-                 }
-              }
-           }
-         });
+            // Update Box Anchors of Link Box
+            linkBox.updateBoxAnchors();
+         }
       }
    }
 }

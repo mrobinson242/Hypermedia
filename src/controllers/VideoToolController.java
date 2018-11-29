@@ -1,55 +1,41 @@
 package controllers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import data.Link;
 import data.Point;
 import dialogs.ImportVideoDialog;
 import dialogs.LinkCreationDialog;
+import dialogs.SaveDialog;
 import dialogs.interfaces.IDialog;
 import enums.EFontAwesome;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import util.PolygonUtil;
-
-import java.io.FileWriter;
-import java.util.Iterator;
-
-import java.io.FileReader;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
-import java.io.FileNotFoundException;
+import java.util.List;
 
 /**
  * VideoToolController - Controls the User Interaction on the
@@ -112,7 +98,16 @@ public class VideoToolController extends AbstractController
    private Label _hyperlinkFilename;
 
    @FXML
-   private ListView<Link> _selectLinkView;
+   private TableView<Link> _linkTableView;
+
+   @FXML
+   private TableColumn<Link, String> _linkNameColumn;
+   
+   @FXML
+   private TableColumn<Link, Integer> _startFrameColumn;
+   
+   @FXML
+   private TableColumn<Link, Integer> _endFrameColumn;
 
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "VideoTool.fxml";
@@ -125,9 +120,6 @@ public class VideoToolController extends AbstractController
 
    /** Home Page Controller */
    private HomePageController _homePageController;
-
-   /** Stage of the Application Window */
-   private final Stage _primaryStage;
 
    /** Primary Video File */
    private File _primaryVideo;
@@ -150,17 +142,20 @@ public class VideoToolController extends AbstractController
    /** Dialog Window for Importing Videos */
    private IDialog _importVideoDialog;
 
+   /** Dialog Window for Saving a File */
+   private IDialog _saveDialog;
+
    /** Polygon Math Utility Helper */
    private PolygonUtil _polygonUtil;
-
-   /** Mapping of Frames to Links */
-   private Map<Integer, ArrayList<Link>> _frameToLinkMap;
 
    /** Current Frame of Primary Video */
    private int _currentPrimaryFrame;
 
    /** Current Frame of Secondary Video */
    private int _currentSecondaryFrame;
+
+   /** Observable List of Link Data */
+   private final ObservableList<Link> _linkData;
 
    /**
     * Constructor
@@ -171,9 +166,6 @@ public class VideoToolController extends AbstractController
    public VideoToolController(final Stage primaryStage, final HomePageController homePageController)
    {
       super(FXML_NAME);
-      
-      // Initialize the Stage of the Primary Window
-      _primaryStage = primaryStage;
 
       // Initialize Controllers
       _homePageController = homePageController;
@@ -185,12 +177,10 @@ public class VideoToolController extends AbstractController
       // Initialize Polygon Utility Helper();
       _polygonUtil = new PolygonUtil();
 
-      // Initialize Frame to Link Map
-      _frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
-
       // Initialize Dialogs
       _linkCreationDialog = new LinkCreationDialog(primaryStage, this);
       _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController);
+      _saveDialog = new SaveDialog(primaryStage, homePageController);
 
       // Initialize Video Files to be null
       _primaryVideo = new File("");
@@ -253,31 +243,23 @@ public class VideoToolController extends AbstractController
       handlePrimarySlider();
       handleSecondarySlider();
 
-      // Select Link View Listeners
-      handleSelectLinkView();
+      // Initialize List of Link Data */
+      _linkData = FXCollections.observableArrayList();
 
-      // Mouse Press Listener
-      _primaryVideoPane.setOnMousePressed(new EventHandler<MouseEvent>()
-      {
-         @Override public void handle(final MouseEvent mouseEvent)
-         {
-            // Get Mouse Event
-            Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
+      // Initialize Data of Link Table View
+      _linkTableView.setItems(_linkData);
+      _linkTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-            // Get Link List associated with Current Frame
-            ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
+      // Set Cell Value Factory for the Link Table View
+      _linkNameColumn.setCellValueFactory(new PropertyValueFactory<Link, String>("linkName"));
+      _startFrameColumn.setCellValueFactory(new PropertyValueFactory<Link, Integer>("startFrame"));
+      _endFrameColumn.setCellValueFactory(new PropertyValueFactory<Link, Integer>("endFrame"));
 
-            // Iterate over the Current Links
-            for(Link link : linkList)
-            {
-               // Check if Mouse Press is inside Polygon
-               boolean isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices());
+      // Link Selection Table View Listeners
+      handleLinkSelectionTable();
 
-               // TODO: Remove Debug Stmt
-               // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
-            }
-         }
-      });
+      // Handle Hyperlink Selection
+      handleHyperlinkSelection();
    }
 
    /**
@@ -393,34 +375,11 @@ public class VideoToolController extends AbstractController
       link.setToVideo(_secondaryVideo);
       link.setToFrame(_currentSecondaryFrame);
 
-      // Add Link to ListView
-      _selectLinkView.getItems().add(link);
-
-      synchronized(_frameToLinkMap)
-      {
-         // Associate the Link with the Current Frame
-         ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
-
-         // Null Check Link List
-         if(linkList == null)
-         {
-            // Create new Link List
-            linkList = new ArrayList<Link>();
-
-            // Add Link to List
-            linkList.add(link);
-
-            // Create Mapping
-            _frameToLinkMap.put(_currentPrimaryFrame, linkList);
-         }
-         else
-         {
-            _frameToLinkMap.get(_currentPrimaryFrame).add(link);
-         }
-      }
+      // Add Link to Observable List of Link Data
+      _linkData.add(link);
 
       // Display Links
-      displayLinks();
+      displayLinks(_currentPrimaryFrame);
    }
 
    /**
@@ -434,9 +393,19 @@ public class VideoToolController extends AbstractController
    }
 
    /**
+    * getCurrentPrimaryFrame - Gets the Current Frame of the Primary Video
+    *
+    * @return int
+    */
+   public int getCurrentPrimaryFrame()
+   {
+      return _currentPrimaryFrame;
+   }
+
+   /**
     * openHyperlinkFile - Opens up the Hyperlink File
     */
-   public void openHyperlinkFile(File file)
+   public void openHyperlinkFile(File file, Map<Integer, ArrayList<Link>> frameToLinkMap)
    {
        // Check if current file matches Hyperlink File
        if(!_hyperlinkFilename.equals(file.getName()))
@@ -444,6 +413,30 @@ public class VideoToolController extends AbstractController
           // Update Filename Label
           _hyperlinkFilename.setVisible(true);
           _hyperlinkFilename.setText(file.getName());
+
+//          // Update Frame To Link Map
+//          _frameToLinkMap = frameToLinkMap;
+//
+//          // Iterate over each Frame in Map
+//          for(final Integer frame : _frameToLinkMap.keySet())
+//          {
+//             // Get the Link List
+//             ArrayList<Link> linkList = _frameToLinkMap.get(frame);
+//
+//             // Iterate over the Link List
+//             for(final Link link : linkList)
+//             {
+//                // Add Link to ListView
+//                //_selectLinkView.getItems().add(link);
+//             }
+//          }
+
+          // Update Links
+          displayLinks(_currentPrimaryFrame);
+       }
+       else
+       {
+          // TODO: Handle Case where same file is open in Video Player
        }
    }
 
@@ -473,8 +466,10 @@ public class VideoToolController extends AbstractController
    /**
     * displayLinks - Displays all the Links associated
     *                with the current Frame
+    *
+    * @param frameNum - The Currently Displayed Frame
     */
-   private void displayLinks()
+   private void displayLinks(final int frameNum)
    {
       // Clear existing Links
       _primaryVideoPane.getChildren().clear();
@@ -482,17 +477,28 @@ public class VideoToolController extends AbstractController
       // Re-Add the Primary Video View
       _primaryVideoPane.getChildren().add(_primaryVideoView);
 
-      // Get the List of Links from the Map
-      final ArrayList<Link> linkList = _frameToLinkMap.get(_currentPrimaryFrame);
-
       // Null Check Link List
-      if(linkList != null)
+      if(_linkData != null)
       {
          // Iterate over all Links associated with the frame
-         for(Link link : linkList)
+         for(Link link : _linkData)
          {
-            // Add the Link's Bounding Box to the Video Pane
-            _primaryVideoPane.getChildren().add(link.getBoundingGroup());
+            // Update Current Display Frame in Primary Video View
+            link.updateCurrentFrame(_currentPrimaryFrame);
+
+            // Check if Link exists in Frame
+            if(link.containsFrame(frameNum))
+            {
+               // Get Bounding Box associated with the Link
+               Group boundingBox = link.getBoundingGroup(_currentPrimaryFrame);
+
+               // Null Check Bounding Box
+               if(boundingBox != null)
+               {
+                  // Add the Link's Bounding Box to the Video Pane
+                  _primaryVideoPane.getChildren().add(boundingBox);
+               }
+            }
          }
       }
    }
@@ -520,7 +526,8 @@ public class VideoToolController extends AbstractController
       // Process Selection of the New File Button
       _newFileButton.setOnAction(event ->
       {
-         
+         // Show the Save File Dialog
+         _saveDialog.showDialog();
       });
    }
 
@@ -576,19 +583,19 @@ public class VideoToolController extends AbstractController
       _deleteLinkButton.setOnAction(event ->
       {
          // Get the Selected Link
-         final Link selectedLink = _selectLinkView.getSelectionModel().getSelectedItem();
+         //final Link selectedLink = _selectLinkView.getSelectionModel().getSelectedItem();
 
          // Remove Link from Primary Video Pane
-         _primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup());
+         //_primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup());
 
          // Remove Link from Frame to Link Map
-         _frameToLinkMap.get(_currentPrimaryFrame).remove(selectedLink);
+         //_frameToLinkMap.get(_currentPrimaryFrame).remove(selectedLink);
 
          // Remove Link from Select Link View
-         _selectLinkView.getItems().remove(selectedLink);
+         //_selectLinkView.getItems().remove(selectedLink);
 
          // Select View
-         _selectLinkView.getSelectionModel().clearSelection();
+         //_selectLinkView.getSelectionModel().clearSelection();
 
          // Disable Delete Link Button
          _deleteLinkButton.setDisable(true);
@@ -596,55 +603,78 @@ public class VideoToolController extends AbstractController
    }
 
    /**
-    * handleSelectLinkView - Handles the Listeners for the Select Link View
+    * handleHyperlinkSelection
     */
-   private void handleSelectLinkView()
+   private void handleHyperlinkSelection()
    {
-      // Update Display of Select Link View
-      _selectLinkView.setCellFactory(param -> new ListCell<Link>()
+      // Mouse Press Listener
+      _primaryVideoPane.setOnMousePressed(new EventHandler<MouseEvent>()
       {
-         @Override
-         protected void updateItem(Link link, boolean empty)
+         @Override public void handle(final MouseEvent mouseEvent)
          {
-            super.updateItem(link, empty);
+            // Get Mouse Event
+            Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
 
-            if(empty || link == null || link.getName() == null)
+            // Iterate over the Current Links
+            for(Link link : _linkData)
             {
-               setText(null);
-            }
-            else
-            {
-               setText(link.getName());
+               // Initialize Boolean Indicator
+               boolean isInsidePolygon;
+
+               // Get List of Vertices
+               final List<Point> vertices = link.getVertices(_currentPrimaryFrame);
+               
+               // Ensure that there are Vertices
+               if(!vertices.isEmpty())
+               {
+                  // Check if Mouse Press is inside Polygon
+                  isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices(_currentPrimaryFrame));
+               }
+               else
+               {
+                  // Default to not inside polygon
+                  isInsidePolygon = false;
+               }
+
+               // TODO: Remove Debug Stmt
+               // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
             }
          }
       });
+   }
 
-      // Selection Listener for Select Link View
-      _selectLinkView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Link>()
+   /**
+    * handleLinkSelectionTable - Handles the Listeners for the Select Link View
+    */
+   private void handleLinkSelectionTable()
+   {
+      // Selection Listener for Link Selection Table
+      _linkTableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Link>()
       {
          @Override
          public void changed(ObservableValue<? extends Link> arg0, Link unselectedLink, Link selectedLink)
          {
+            // TODO: Remove Debug Statement
+            System.out.println("SELECTION CHANGE");
+
             // Null Check Selected Link
             if(selectedLink != null)
             {
                // Enable Delete Link Button
                _deleteLinkButton.setDisable(false);
 
-               // Update Link Editable State
-               selectedLink.setIsEditable(true);
-
-               // Update Color of Link's Bounding Box to be Selected Color
-               selectedLink.getBoundingBox().setStroke(Color.BLUE);
+               // Update Link Selected State
+               selectedLink.setIsSelected(true);
             }
 
-            for(Link link : _selectLinkView.getItems())
+            // Iterate over the Links
+            for(Link link : _linkData)
             {
                // If link no longer selected
-               if(!link.equals(_selectLinkView.getSelectionModel().getSelectedItem()))
+               if(!link.equals(_linkTableView.getSelectionModel().getSelectedItem()))
                {
-                  link.setIsEditable(false);
-                  link.getBoundingBox().setStroke(Color.FORESTGREEN);
+                  // Update Link Selected State
+                  link.setIsSelected(false);
                }
             }
          }
@@ -681,7 +711,7 @@ public class VideoToolController extends AbstractController
                _primaryMediaPlayer.seek(new Duration(frameTime));
 
                // Display Links associated with Current Frame
-               displayLinks();
+               displayLinks(_currentPrimaryFrame);
             }
          }
       });
@@ -777,147 +807,98 @@ public class VideoToolController extends AbstractController
    }
 
    /**
-    * uploadDataFromFile - Reads in Data from Hyperlink File
-    */
-   private void uploadDataFromFile(final File file)
-   {
-      // TODO: IMPLEMENT
-      _frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
-      JSONParser parser = new JSONParser();
-      try {
-         Object obj = parser.parse(new FileReader(file));
-         JSONObject jsonObject = (JSONObject) obj;
-         Iterator<String> frames = jsonObject.keySet().iterator();
-         while(frames.hasNext()) {
-            String frame = frames.next();
-            JSONArray frameLinks = (JSONArray) jsonObject.get(frame);
-            Iterator allLinks = frameLinks.iterator();
-            ArrayList<Link> linkList = new ArrayList<Link>();
-            while (allLinks.hasNext()) {
-               JSONObject linkInfo = (JSONObject) allLinks.next();
-               String name = (String) linkInfo.get("name");
-               String toVideo = (String) linkInfo.get("toVideo");
-               String fromVideo = (String) linkInfo.get("fromVideo");
-               int toFrame = (int) linkInfo.get("toFrame");
-               JSONArray pointInfo = (JSONArray) linkInfo.get("points");
-               Iterator points = pointInfo.iterator();
-               ArrayList<Double> pList = new ArrayList<Double>();
-               while (points.hasNext()) {
-                  pList.add((Double) points.next());
-               }
-               Link now = new Link(name, fromVideo, toVideo, toFrame, pList);
-               linkList.add(now);
-            }
-            _frameToLinkMap.put(Integer.parseInt(frame), linkList);
-         }
-      } 
-      catch (FileNotFoundException e)
-      {
-         e.printStackTrace();
-      }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
-      catch (ParseException e)
-      {
-         e.printStackTrace();
-      } 
-   }
-
-   /**
     * writeDataToFile
     * 
     * @param file - File to write data to
     */
    private void writeDataToFile(final File file)
    {
-      JSONObject frames = new JSONObject();
-      Iterator allLinks = _frameToLinkMap.entrySet().iterator();
-
-      // Iterate over all Links in Map
-      while (allLinks.hasNext())
-      {
-         Map.Entry frameInfo = (Map.Entry) allLinks.next();
-         int frameNum = (int) frameInfo.getKey();
-         ArrayList<Link> frameLinks = (ArrayList<Link>) frameInfo.getValue();
-         JSONArray links = new JSONArray();
-
-         // Iterate over each link
-         for (Link link : frameLinks)
-         {
-            // Create new Json Object for Link
-            JSONObject linkInfo = new JSONObject();
-
-            // Store Name of Link
-            linkInfo.put("name", link.getName());
-
-            try 
-            {
-               // Store To/From Videos
-               linkInfo.put("fromVideo", link.getFromVideo().getAbsolutePath());
-               linkInfo.put("toVideo", link.getToVideo().getAbsolutePath());
-            }
-            catch (final Exception e)
-            {
-               // Log Error
-               e.printStackTrace();
-            }
-            linkInfo.put("toFrame", link.getToFrame());
-
-            // Create JsonArray to store Vertices
-            JSONArray points = new JSONArray();
-
-            // Get Vertex Array associated with Link
-            ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices();
-
-            // Iterate over all the Vertices
-            for (int i = 0; i < pointArray.size(); i++)
-            {
-               // Add the X/Y Vertex Location to the JsonArray
-               points.add(pointArray.get(i).getX());
-               points.add(pointArray.get(i).getY());
-            }
-
-            // 
-            linkInfo.put("points", points);
-            links.add(linkInfo);
-         }
-         frames.put(frameNum, links);
-      }
-
-      try 
-      {
-         // Create new File
-         file.createNewFile();
-
-         // Initialize File Writer
-         FileWriter f = new FileWriter(file);
-
-         // Create new Gson Object
-         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-         // Parse Json Object
-         JsonParser jp = new JsonParser();
-         JsonElement je = jp.parse(frames.toJSONString());
-
-         // Convert to Formatted Json String
-         String prettyJsonString = gson.toJson(je);
-
-         // Write out Data to File
-         f.write(prettyJsonString);
-
-         // Log File Write Success
-         System.out.println("Success");
-
-         // Cleanup File Writer
-         f.flush();
-         f.close();
-      }
-      catch (IOException e)
-      {
-         // Log Error
-         e.printStackTrace();
-      }
+//      JSONObject frames = new JSONObject();
+//      Iterator allLinks = _frameToLinkMap.entrySet().iterator();
+//
+//      // Iterate over all Links in Map
+//      while (allLinks.hasNext())
+//      {
+//         Map.Entry frameInfo = (Map.Entry) allLinks.next();
+//         int frameNum = (int) frameInfo.getKey();
+//         ArrayList<Link> frameLinks = (ArrayList<Link>) frameInfo.getValue();
+//         JSONArray links = new JSONArray();
+//
+//         // Iterate over each link
+//         for (Link link : frameLinks)
+//         {
+//            // Create new Json Object for Link
+//            JSONObject linkInfo = new JSONObject();
+//
+//            // Store Name of Link
+//            linkInfo.put("name", link.getLinkName());
+//
+//            try 
+//            {
+//               // Store To/From Videos
+//               linkInfo.put("fromVideo", link.getFromVideo().getAbsolutePath());
+//               linkInfo.put("toVideo", link.getToVideo().getAbsolutePath());
+//            }
+//            catch (final Exception e)
+//            {
+//               // Log Error
+//               e.printStackTrace();
+//            }
+//            linkInfo.put("toFrame", link.getToFrame());
+//
+//            // Create JsonArray to store Vertices
+//            JSONArray points = new JSONArray();
+//
+//            // Get Vertex Array associated with Link
+//            ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices();
+//
+//            // Iterate over all the Vertices
+//            for (int i = 0; i < pointArray.size(); i++)
+//            {
+//               // Add the X/Y Vertex Location to the JsonArray
+//               points.add(pointArray.get(i).getX());
+//               points.add(pointArray.get(i).getY());
+//            }
+//
+//            // 
+//            linkInfo.put("points", points);
+//            links.add(linkInfo);
+//         }
+//         frames.put(frameNum, links);
+//      }
+//
+//      try 
+//      {
+//         // Create new File
+//         file.createNewFile();
+//
+//         // Initialize File Writer
+//         FileWriter f = new FileWriter(file);
+//
+//         // Create new Gson Object
+//         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//
+//         // Parse Json Object
+//         JsonParser jp = new JsonParser();
+//         JsonElement je = jp.parse(frames.toJSONString());
+//
+//         // Convert to Formatted Json String
+//         String prettyJsonString = gson.toJson(je);
+//
+//         // Write out Data to File
+//         f.write(prettyJsonString);
+//
+//         // Log File Write Success
+//         System.out.println("Success");
+//
+//         // Cleanup File Writer
+//         f.flush();
+//         f.close();
+//      }
+//      catch (IOException e)
+//      {
+//         // Log Error
+//         e.printStackTrace();
+//      }
    }
 }
