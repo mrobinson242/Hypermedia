@@ -467,7 +467,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/videos");
+      sb.append("/videos");
 
       // Set Path to Video Files
       final File videoFile = new File(sb.toString());
@@ -495,7 +495,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/files");
+      sb.append("/files");
 
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());
@@ -524,7 +524,7 @@ public class HomePageController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/files");
+      sb.append("/files");
 
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());

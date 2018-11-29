@@ -6,6 +6,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import controllers.VideoToolController;
+import controllers.VideoPlayerController;
 
 /**
  * Main

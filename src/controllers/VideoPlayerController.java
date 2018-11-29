@@ -100,7 +100,7 @@ public class VideoPlayerController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/files");
+      sb.append("/files");
 
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());
