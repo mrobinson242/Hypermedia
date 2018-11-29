@@ -242,7 +242,7 @@ public class HomePageController extends AbstractController
          }
          else
          {
-            
+            // TODO: JOSH PLEASE IMPLEMENT
          }
       }
    }
@@ -638,7 +638,7 @@ public class HomePageController extends AbstractController
                   pList.add((Double) points.next());
                }
 
-               Link now = new Link(name, fromVideo, toVideo, toFrame, pList);
+               Link now = new Link(name, 0, 0, fromVideo, toVideo, toFrame, pList);
                linkList.add(now);
             }
             frameToLinkMap.put(Integer.parseInt(frame), linkList);

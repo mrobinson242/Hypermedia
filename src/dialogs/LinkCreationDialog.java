@@ -17,6 +17,12 @@ public class LinkCreationDialog extends AbstractDialog
    private TextField _linkTextField;
 
    @FXML
+   private TextField _startFrameTextField;
+
+   @FXML
+   private TextField _endFrameTextField;
+
+   @FXML
    private Button _createLinkButton;
 
    @FXML
@@ -30,8 +36,10 @@ public class LinkCreationDialog extends AbstractDialog
 
    /**
     * Constructor
-    * 
-    * @param primaryStage - The Primary Stage of the Application
+    *
+    * @param primaryStage        - The Primary Stage of the Application
+    * @param videoToolController - The Controller for the Video Tool Tab
+    * @param startFrame          - The Start Frame of the Primary Video
     */
    public LinkCreationDialog(final Stage primaryStage, final VideoToolController videoToolController)
    {
@@ -65,8 +73,12 @@ public class LinkCreationDialog extends AbstractDialog
          // Get Name from Text Field
          String linkName = _linkTextField.getText();
 
+         // Get Start/End Frame from Text Field
+         final int startFrame = Integer.parseInt(_startFrameTextField.getText());
+         final int endFrame = Integer.parseInt(_endFrameTextField.getText());
+
          // Create a new HyperLink
-         final Link link = new Link(linkName);
+         final Link link = new Link(linkName, startFrame, endFrame, _videoToolController.getCurrentPrimaryFrame());
          _videoToolController.createHyperlink(link);
 
          // Close the Dialog
@@ -92,6 +104,17 @@ public class LinkCreationDialog extends AbstractDialog
     */
    private void handleDialogVisibility()
    {
+      // On Dialgo Show Action
+      _dialogStage.setOnShowing(event ->
+      {
+         // Get the Current Start Frame from the Video Tool Tab
+         final int startFrame = _videoToolController.getCurrentPrimaryFrame();
+
+         // Update Start/End Frame Text Field
+         _startFrameTextField.setText(String.valueOf(startFrame));
+         _endFrameTextField.setText(String.valueOf(startFrame));
+      });
+
       // On Dialog Hide Action
       _dialogStage.setOnHidden(event->
       {
