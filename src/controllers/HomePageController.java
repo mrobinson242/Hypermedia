@@ -242,7 +242,7 @@ public class HomePageController extends AbstractController
          }
          else
          {
-            // TODO: JOSH PLEASE IMPLEMENT
+            _videoPlayerController.
          }
       }
    }
