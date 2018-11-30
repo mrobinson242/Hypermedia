@@ -332,8 +332,6 @@ public class HomePageController extends AbstractController
       return _currentVideoPlayerFile;
    }
 
-
-
    /**
     * handleVideoToolButtonSelection - Handles the Selection of
     *                                  the Video Tool Toggle Button
@@ -466,7 +464,7 @@ public class HomePageController extends AbstractController
       // Process Selection of the Save As Menu Item
       _saveAsMenuItem.setOnAction(event ->
       {
-         // Save the Hyperlinhk File
+         // Save the Hyperlink File
          saveHyperlinkFile(true);
       });
    }

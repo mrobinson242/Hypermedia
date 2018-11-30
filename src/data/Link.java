@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import controllers.LinkBox;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Group;
@@ -79,7 +78,7 @@ public class Link
       for(int i = startFrame; i <= endFrame; ++i)
       {
          // Create a New Link Bounding Box
-         LinkBox linkBox = new LinkBox();
+         LinkBox linkBox = new LinkBox(this);
 
          // Add Bounding Box to Map
          _frameToBoxMap.put(i, linkBox);
@@ -112,6 +111,65 @@ public class Link
 
       // Initialize To Frame
       _toFrame = toFrame;
+   }
+
+   /**
+    * performLinearInterpolation - Performs Linear Interpolation
+    */
+   public void performLinearInterpolation()
+   {
+      // Amount of Frames the Link is in
+      final int dFrameTime = _endFrame.get() - _startFrame.get();
+
+      synchronized (_frameToBoxMap)
+      {
+         // Get the Link Box Associated with the Start/End Frame
+         LinkBox startLinkBox = _frameToBoxMap.get(_startFrame.get());
+         LinkBox endLinkBox = _frameToBoxMap.get(_endFrame.get());
+
+         // Get Vertices for Start/End Link Box
+         List<Double> startVertices = startLinkBox.getPoints();
+         List<Double> endVertices = endLinkBox.getPoints();
+
+         // Iterate over Points in BoundingBox
+         for(int i = 0; i < startVertices.size(); i+=2)
+         {
+            // Get X/Y of Start Vertex
+            final double startX = startVertices.get(i);
+            final double startY = startVertices.get(i+1);
+
+            // Get X/Y of End Vertex
+            final double endX = endVertices.get(i);
+            final double endY = endVertices.get(i+1);
+
+            // Calculate Change in X/Y Value of the Vertex per Frame
+            final double dx = (endX - startX) / dFrameTime;
+            final double dy = (endY - startY) / dFrameTime;
+
+            // Initialize Change in X/Y Value per frame
+            double fX = 0;
+            double fY = 0;
+
+            // Iterate over all the Frames the Link is in
+            for(int j = _startFrame.get(); j <= _endFrame.get(); ++j)
+            {
+               // Get the Link Box associated with the Frame
+               LinkBox linkBox = _frameToBoxMap.get(j);
+
+               // Get X/Y of the Vertex
+               final double x = linkBox.getPoints().get(i);
+               final double y = linkBox.getPoints().get(i+1);
+
+               // Update X/Y of the Vertex
+               linkBox.getPoints().set(i, startX+fX);
+               linkBox.getPoints().set(i+1, startY+fY);
+
+               // Increment Values
+               fX += dx;
+               fY += dy;
+            }
+         }
+      }
    }
 
    /**
@@ -194,6 +252,7 @@ public class Link
    {
       return _toFrame;
    }
+
 
    /**
     * getBoundingGroup - Get the Bounding Group for the Link's
@@ -328,18 +387,15 @@ public class Link
             {
                // Update Bounding Box Style
                linkBox.getBoundingBox().setId("linkSelected");
-
-               // Update Bounding Box Anchors Style
-               linkBox.updateBoxAnchors();
             }
             else
             {
                // Update Bounding Box Style
                linkBox.getBoundingBox().setId("linkUnselected");
-
-               // Update Bounding Box Anchors Style
-               linkBox.updateBoxAnchors();
             }
+
+            // Update Bounding Box Anchors Style
+            linkBox.updateBoxAnchors(isSelected);
          }
       }
    }
@@ -370,7 +426,7 @@ public class Link
             }
 
             // Update Box Anchors of Link Box
-            linkBox.updateBoxAnchors();
+            linkBox.updateBoxAnchors(_isSelected);
          }
       }
    }

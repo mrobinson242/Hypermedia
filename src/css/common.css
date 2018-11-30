@@ -276,7 +276,7 @@
 {
    -fx-alignment: CENTER;
    -fx-background-color: tundora;
-   -fx-border-color: textColor;
+   -fx-border-color: textColor textColor textColor textColor;
 }
 
 /** CSS for Link Selection Table Cell */
@@ -284,7 +284,7 @@
 {
    -fx-text-fill: textColor;
    -fx-alignment: CENTER;
-   -fx-border-color: textColor transparent textColor textColor;
+   -fx-border-color: textColor textColor textColor textColor;
 }
 
 /** CSS for Link Selection Table Cell (Odd) */
@@ -299,6 +299,12 @@
    -fx-background-color: mineShaft;
 }
 
+.table-row-cell:filled:selected
+{
+   -fx-background-color: rgba(49,137,246, 0.3);
+   -fx-border-color: dodgerBlue;
+}
+
 /** CSS for a Selected Link */
 #linkSelected
 {
@@ -310,7 +316,7 @@
 /** CSS for a Selected Link */
 #linkUnselected
 {
-   -fx-stroke: tundora;
+   -fx-stroke: silverChalice;
    -fx-stroke-width: 2;
    -fx-fill: transparent;
 }

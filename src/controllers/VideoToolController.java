@@ -11,10 +11,14 @@ import dialogs.LinkCreationDialog;
 import dialogs.SaveDialog;
 import dialogs.interfaces.IDialog;
 import enums.EFontAwesome;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
+import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
@@ -24,6 +28,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -32,6 +37,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import util.PolygonUtil;
@@ -157,6 +163,8 @@ public class VideoToolController extends AbstractController
    /** Observable List of Link Data */
    private final ObservableList<Link> _linkData;
 
+   ObservableMap<Link, Boolean> _removed;
+
    /**
     * Constructor
     *
@@ -248,7 +256,8 @@ public class VideoToolController extends AbstractController
 
       // Initialize Data of Link Table View
       _linkTableView.setItems(_linkData);
-      _linkTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+      _linkTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+      _linkTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
       // Set Cell Value Factory for the Link Table View
       _linkNameColumn.setCellValueFactory(new PropertyValueFactory<Link, String>("linkName"));
@@ -260,6 +269,24 @@ public class VideoToolController extends AbstractController
 
       // Handle Hyperlink Selection
       handleHyperlinkSelection();
+
+      _removed = FXCollections.observableHashMap();
+      PseudoClass highlightClass = PseudoClass.getPseudoClass("highlight");
+
+      _linkTableView.setRowFactory(rf ->
+      {
+         TableRow<Link> link = new TableRow<Link>();
+
+         ObjectBinding<Boolean> binding = Bindings.valueAt(_removed, link.itemProperty());
+         binding.addListener((observable, oldValue, newValue) -> link.pseudoClassStateChanged(highlightClass, newValue != null && newValue));
+
+         return link;
+      });
+
+      Rectangle clip = new Rectangle();
+      clip.widthProperty().bind(_primaryVideoPane.widthProperty());
+      clip.heightProperty().bind(_primaryVideoPane.heightProperty());
+      _primaryVideoPane.setClip(clip);
    }
 
    /**
@@ -303,6 +330,9 @@ public class VideoToolController extends AbstractController
                   // Enable Linking Tool
                   _createLinkButton.setDisable(false);
                }
+
+               // Update Displayed Links
+               displayLinks(_currentPrimaryFrame);
             }
          });
       }
@@ -483,20 +513,24 @@ public class VideoToolController extends AbstractController
          // Iterate over all Links associated with the frame
          for(Link link : _linkData)
          {
-            // Update Current Display Frame in Primary Video View
-            link.updateCurrentFrame(_currentPrimaryFrame);
-
-            // Check if Link exists in Frame
-            if(link.containsFrame(frameNum))
+            // Ensure Link is Associated with the Video
+            if(link.getFromVideo().equals(_primaryVideo))
             {
-               // Get Bounding Box associated with the Link
-               Group boundingBox = link.getBoundingGroup(_currentPrimaryFrame);
+               // Update Current Display Frame in Primary Video View
+               link.updateCurrentFrame(_currentPrimaryFrame);
 
-               // Null Check Bounding Box
-               if(boundingBox != null)
+               // Check if Link exists in Frame
+               if(link.containsFrame(frameNum))
                {
-                  // Add the Link's Bounding Box to the Video Pane
-                  _primaryVideoPane.getChildren().add(boundingBox);
+                  // Get Bounding Box associated with the Link
+                  Group boundingBox = link.getBoundingGroup(_currentPrimaryFrame);
+
+                  // Null Check Bounding Box
+                  if(boundingBox != null)
+                  {
+                     // Add the Link's Bounding Box to the Video Pane
+                     _primaryVideoPane.getChildren().add(boundingBox);
+                  }
                }
             }
          }
@@ -583,22 +617,31 @@ public class VideoToolController extends AbstractController
       _deleteLinkButton.setOnAction(event ->
       {
          // Get the Selected Link
-         //final Link selectedLink = _selectLinkView.getSelectionModel().getSelectedItem();
+         final Link selectedLink = _linkTableView.getSelectionModel().getSelectedItem();
 
-         // Remove Link from Primary Video Pane
-         //_primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup());
+         // Null Check Selected Link
+         if(selectedLink != null)
+         {
+            // Get Start/End Frames for Link
+            final int startFrame = selectedLink.getStartFrame();
+            final int endFrame = selectedLink.getEndFrame();
 
-         // Remove Link from Frame to Link Map
-         //_frameToLinkMap.get(_currentPrimaryFrame).remove(selectedLink);
+            // Iterate over all the Frames the Link is in
+            for(int i = startFrame; i <= endFrame; ++i)
+            {
+               // Remove Link from Primary Video Pane
+               _primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup(i));
+            }
 
-         // Remove Link from Select Link View
-         //_selectLinkView.getItems().remove(selectedLink);
+            // Remove Link from Table
+            _linkTableView.getItems().remove(selectedLink);
 
-         // Select View
-         //_selectLinkView.getSelectionModel().clearSelection();
+            // Select View
+            _linkTableView.getSelectionModel().clearSelection();
 
-         // Disable Delete Link Button
-         _deleteLinkButton.setDisable(true);
+            // Disable Delete Link Button
+            _deleteLinkButton.setDisable(true);
+         }
       });
    }
 
@@ -637,7 +680,7 @@ public class VideoToolController extends AbstractController
                }
 
                // TODO: Remove Debug Stmt
-               // System.out.println("Inside Polygon " + link.getName() + ": " + isInsidePolygon);
+               // System.out.println("Inside Polygon " + link.getLinkName() + ": " + isInsidePolygon);
             }
          }
       });
@@ -648,6 +691,31 @@ public class VideoToolController extends AbstractController
     */
    private void handleLinkSelectionTable()
    {
+      // Click Listener
+      EventHandler<MouseEvent> clickListener = event ->
+      {
+         System.out.println("Register Mouse Click");
+
+         TableRow<Link> row = (TableRow<Link>)event.getTarget();
+         
+         // Check if Row is Empty
+         if(!row.isEmpty() && row.isSelected())
+         {
+            _linkTableView.getSelectionModel().clearSelection();
+         }
+      };
+
+      _linkTableView.setRowFactory(tv ->
+      {
+         TableRow<Link> row = new TableRow<Link>();
+
+         // Mouse Clicked Listener
+         row.setOnMouseClicked(clickListener);
+
+         return row;
+      });
+
+
       // Selection Listener for Link Selection Table
       _linkTableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Link>()
       {
@@ -665,6 +733,8 @@ public class VideoToolController extends AbstractController
 
                // Update Link Selected State
                selectedLink.setIsSelected(true);
+
+               _removed.put(selectedLink, Boolean.TRUE);
             }
 
             // Iterate over the Links
