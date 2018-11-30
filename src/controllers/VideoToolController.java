@@ -43,6 +43,19 @@ import javafx.util.Duration;
 import util.PolygonUtil;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import java.io.FileWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import com.google.gson.JsonElement;
+
+
+
 /**
  * VideoToolController - Controls the User Interaction on the
  *                       HyperLinking Video Tool Page
@@ -161,7 +174,7 @@ public class VideoToolController extends AbstractController
    private int _currentSecondaryFrame;
 
    /** Observable List of Link Data */
-   private final ObservableList<Link> _linkData;
+   private ObservableList<Link> _linkData;
 
    ObservableMap<Link, Boolean> _removed;
 
@@ -435,8 +448,9 @@ public class VideoToolController extends AbstractController
    /**
     * openHyperlinkFile - Opens up the Hyperlink File
     */
-   public void openHyperlinkFile(File file, Map<Integer, ArrayList<Link>> frameToLinkMap)
+   public void openHyperlinkFile(File file, ArrayList<Link> linkData)
    {
+       _linkData = FXCollections.observableArrayList(linkData);
        // Check if current file matches Hyperlink File
        if(!_hyperlinkFilename.equals(file.getName()))
        {
@@ -883,92 +897,75 @@ public class VideoToolController extends AbstractController
     */
    private void writeDataToFile(final File file)
    {
-//      JSONObject frames = new JSONObject();
-//      Iterator allLinks = _frameToLinkMap.entrySet().iterator();
-//
-//      // Iterate over all Links in Map
-//      while (allLinks.hasNext())
-//      {
-//         Map.Entry frameInfo = (Map.Entry) allLinks.next();
-//         int frameNum = (int) frameInfo.getKey();
-//         ArrayList<Link> frameLinks = (ArrayList<Link>) frameInfo.getValue();
-//         JSONArray links = new JSONArray();
-//
-//         // Iterate over each link
-//         for (Link link : frameLinks)
-//         {
-//            // Create new Json Object for Link
-//            JSONObject linkInfo = new JSONObject();
-//
-//            // Store Name of Link
-//            linkInfo.put("name", link.getLinkName());
-//
-//            try 
-//            {
-//               // Store To/From Videos
-//               linkInfo.put("fromVideo", link.getFromVideo().getAbsolutePath());
-//               linkInfo.put("toVideo", link.getToVideo().getAbsolutePath());
-//            }
-//            catch (final Exception e)
-//            {
-//               // Log Error
-//               e.printStackTrace();
-//            }
-//            linkInfo.put("toFrame", link.getToFrame());
-//
-//            // Create JsonArray to store Vertices
-//            JSONArray points = new JSONArray();
-//
-//            // Get Vertex Array associated with Link
-//            ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices();
-//
-//            // Iterate over all the Vertices
-//            for (int i = 0; i < pointArray.size(); i++)
-//            {
-//               // Add the X/Y Vertex Location to the JsonArray
-//               points.add(pointArray.get(i).getX());
-//               points.add(pointArray.get(i).getY());
-//            }
-//
-//            // 
-//            linkInfo.put("points", points);
-//            links.add(linkInfo);
-//         }
-//         frames.put(frameNum, links);
-//      }
-//
-//      try 
-//      {
-//         // Create new File
-//         file.createNewFile();
-//
-//         // Initialize File Writer
-//         FileWriter f = new FileWriter(file);
-//
-//         // Create new Gson Object
-//         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//
-//         // Parse Json Object
-//         JsonParser jp = new JsonParser();
-//         JsonElement je = jp.parse(frames.toJSONString());
-//
-//         // Convert to Formatted Json String
-//         String prettyJsonString = gson.toJson(je);
-//
-//         // Write out Data to File
-//         f.write(prettyJsonString);
-//
-//         // Log File Write Success
-//         System.out.println("Success");
-//
-//         // Cleanup File Writer
-//         f.flush();
-//         f.close();
-//      }
-//      catch (IOException e)
-//      {
-//         // Log Error
-//         e.printStackTrace();
-//      }
+      JSONObject links = new JSONObject();
+      // Iterate through all the links.
+      for (Link link : _linkData) 
+      {
+         // Create a JSONObject for the file. And add all the necessary data to reconstruct a link.
+         JSONObject linkInfo = new JSONObject();
+         try 
+         {
+            linkInfo.put("fromVideo", link.getFromVideo().getAbsolutePath());
+            linkInfo.put("toVideo", link.getToVideo().getAbsolutePath());
+         }
+         catch (final Exception e)
+         {
+           // Log Error
+           e.printStackTrace();
+         }
+         linkInfo.put("toFrame", link.getToFrame());
+         linkInfo.put("startFrame", link.getStartFrame());
+         linkInfo.put("endFrame", link.getEndFrame());
+         // Create another JSONObject to store all the bounding box vertices for each frame.
+         JSONObject boxInfo = new JSONObject();
+         for (int i = link.getStartFrame(); i <= link.getEndFrame(); i++) {
+            JSONArray points = new JSONArray();
+            ArrayList<Point> pointArray = (ArrayList<Point>) link.getVertices(i);
+            for (int j = 0; j < pointArray.size(); j++)
+            {
+               // Add the X/Y Vertex Location to the JsonArray
+               points.add(pointArray.get(j).getX());
+               points.add(pointArray.get(j).getY());
+            }
+            boxInfo.put(i, points);
+         }
+         linkInfo.put("boxInfo", boxInfo);
+         links.put(link.getLinkName(), linkInfo);
+
+      }
+      try 
+      {
+         // Create new File
+         file.createNewFile();
+
+         // Initialize File Writer
+         FileWriter f = new FileWriter(file);
+
+         // Create new Gson Object
+         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+         // Parse Json Object
+         JsonParser jp = new JsonParser();
+         JsonElement je = jp.parse(links.toJSONString());
+
+         // Convert to Formatted Json String
+         String prettyJsonString = gson.toJson(je);
+
+         // Write out Data to File
+         f.write(prettyJsonString);
+
+         // Log File Write Success
+         System.out.println("Success");
+
+         // Cleanup File Writer
+         f.flush();
+         f.close();
+      }
+      catch (IOException e)
+      {      
+         // Log Error
+         e.printStackTrace();
+      }
    }
+   
 }

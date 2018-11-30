@@ -55,6 +55,28 @@ public class LinkBox
       _linkGroup.getChildren().addAll(_boxAnchors);
    }
 
+
+   /**
+    * Constructor
+    * @pos
+    */
+   public LinkBox(ArrayList<Double> pos)
+   {
+      // Initialize Editable Indicator
+      _isEditable = false;
+
+      // Initialize Polygon for Bounding Box
+      _boundingBox = createBoundingArea(pos);
+
+      // Initialize Bounding Box Anchors
+      _boxAnchors = createBoxAnchors(_boundingBox.getPoints());
+
+      // Initialize Bounding 
+      _linkGroup = new Group();
+      _linkGroup.getChildren().add(_boundingBox);
+      _linkGroup.getChildren().addAll(_boxAnchors);
+   }
+
    /**
     * getVertices - Gets the Vertices of the Polygon
     *

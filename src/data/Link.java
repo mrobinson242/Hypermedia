@@ -96,7 +96,7 @@ public class Link
     * @param toFrame
     * @param pos
     */
-   public Link(String name, final int startFrame, final int endFrame, String fromVideo, String toVideo, int toFrame, ArrayList<Double> pos)
+   public Link(String name, final int startFrame, final int endFrame, final int currentFrame, String fromVideo, String toVideo, int toFrame, HashMap<Integer, ArrayList<Double>> pos)
    {
       // Initialize Link Name
       _linkName = new SimpleStringProperty(name);
@@ -105,12 +105,29 @@ public class Link
       _startFrame = new SimpleIntegerProperty(startFrame);
       _endFrame = new SimpleIntegerProperty(endFrame);
 
+      _currentFrame = currentFrame;
+
       // Initialize To/From Videos
       _toVideo = new File(toVideo);
       _fromVideo = new File(fromVideo);
 
       // Initialize To Frame
       _toFrame = toFrame;
+
+      _isSelected = false;
+
+      // Initialize Frame to Link Map
+      _frameToBoxMap = new HashMap<Integer, LinkBox>();
+
+      // Iterate over each Frame
+      for(int i = startFrame; i <= endFrame; ++i)
+      {
+         // Create a New Link Bounding Box
+         LinkBox linkBox = new LinkBox(this, pos.get(i));
+
+         // Add Bounding Box to Map
+         _frameToBoxMap.put(i, linkBox);
+      }
    }
 
    /**

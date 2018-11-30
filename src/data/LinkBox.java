@@ -99,6 +99,47 @@ public class LinkBox
    }
 
    /**
+    * Constructor
+    * @pos
+    */
+   public LinkBox(Link parent, ArrayList<Double> pos)
+   {
+      // Initialize Parent Link
+      _parent = parent;
+
+      // Initialize Editable Indicator
+      _isEditable = false;
+
+      // Initialize Polygon for Bounding Box
+      _boundingBox = createBoundingArea(pos);
+
+      // Initialize Bounding Box Layout
+      _layoutX = _boundingBox.getLayoutX();
+      _layoutY = _boundingBox.getLayoutY();
+
+      // Initialize Observable List of Points Vertices
+      _vertices = _boundingBox.getPoints();
+
+      // Initialize Bounding Box Anchors
+      _boxAnchors = createBoxAnchors(_boundingBox, _vertices);
+
+      // Initialize Bounding 
+      _linkGroup = new Group();
+      _linkGroup.getChildren().add(_boundingBox);
+      _linkGroup.getChildren().addAll(_boxAnchors);
+
+      // Initialize Mouse Position
+      _mousePosition = new SimpleObjectProperty<>();
+      _moveVertexList = new ArrayList<Double>();
+
+      // Initialize Polygon Utility Helper();
+      _polygonUtil = new PolygonUtil();
+
+      // Handle Listener on a Link Drag
+      handleLinkDrag();
+   }
+
+   /**
     * getVertices - Gets the Vertices of the Polygon
     *
     * @return List<Point>
