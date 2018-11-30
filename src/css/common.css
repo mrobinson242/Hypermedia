@@ -223,6 +223,7 @@
    -fx-background-color: milanoRed;
 }
 
+/** CSS for Disabled Slider Thumb */
 .frameSlider:disabled .thumb
 {
    -fx-background-color: boulder;
@@ -238,6 +239,15 @@
    -fx-border-color: silverChalice boulder boulder silverChalice;
 }
 
+/** CSS for Error Icon */
+.errorLabel
+{
+   -fx-font-family: FontAwesome;
+   -fx-background-color: milanoRed;
+   -fx-text-fill: textColor;
+   -fx-font-size: 40px;
+}
+
 /** CSS for Solid Font Awesome Button */
 .solidAwesomeButton
 {
@@ -248,7 +258,6 @@
    -fx-font-size: 30px;
    -fx-border-color: silverChalice boulder boulder silverChalice;
 }
-
 
 /** CSS for Pressed Font Awesome Button */
 .awesomeButton:pressed

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import data.Link;
 import data.Point;
+import dialogs.ErrorDialog;
 import dialogs.ImportVideoDialog;
 import dialogs.LinkCreationDialog;
 import dialogs.SaveDialog;
@@ -147,6 +148,9 @@ public class VideoToolController extends AbstractController
    /** Dialog Window for Link Creation */
    private LinkCreationDialog _linkCreationDialog;
 
+   /** Dialog Window for Errors */
+   private ErrorDialog _errorDialog;
+
    /** Dialog Window for Importing Videos */
    private IDialog _importVideoDialog;
 
@@ -196,6 +200,7 @@ public class VideoToolController extends AbstractController
       _linkCreationDialog = new LinkCreationDialog(primaryStage, this, loader);
       _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController, loader);
       _saveDialog = new SaveDialog(primaryStage, homePageController, loader);
+      _errorDialog = new ErrorDialog(primaryStage, loader);
 
       // Initialize Video Files to be null
       _primaryVideo = new File("");
@@ -489,6 +494,45 @@ public class VideoToolController extends AbstractController
 
       // Enable New File Button
       _newFileButton.setDisable(false);
+   }
+
+   /**
+    * displayErrorDialog - Displays the Error Dialog
+    */
+   public void displayErrorDialog(final String errorMessage)
+   {
+      // Update Error MEssage
+      _errorDialog.setErrorMessage(errorMessage);
+ 
+      // Display the Error Dialog
+      _errorDialog.showDialog();
+   }
+
+   /**
+    * verifyUniqueLink - Verifies that another Link does not have
+    *                    the same name
+    *
+    * @param linkName - The Link Name
+    * @return boolean
+    */
+   public boolean verifyUniqueLink(final String linkName)
+   {
+      // Initialize Unique Indicator
+      boolean isUnique = true;
+
+      // Iterate over all the current links
+      for(Link link : _linkData)
+      {
+         // Check if an Existing Link has the same name
+         if(link.getLinkName().equals(linkName))
+         {
+            // Set Unique Indicator to false
+            isUnique = false;
+            break;
+         }
+      }
+
+      return isUnique;
    }
 
    /**

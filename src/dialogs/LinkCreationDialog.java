@@ -111,13 +111,22 @@ public class LinkCreationDialog extends AbstractDialog
          // Get Name from Text Field
          String linkName = _linkTextField.getText();
 
-         // Get Start/End Frame from Text Field
-         final int startFrame = _numericStartFrameTextField.getIntValue();
-         final int endFrame = _numericEndFrameTextField.getIntValue();
+         // Verify that the Link is Unique
+         if(_videoToolController.verifyUniqueLink(linkName))
+         {
+            // Get Start/End Frame from Text Field
+            final int startFrame = _numericStartFrameTextField.getIntValue();
+            final int endFrame = _numericEndFrameTextField.getIntValue();
 
-         // Create a new HyperLink
-         final Link link = new Link(linkName, startFrame, endFrame, _videoToolController.getCurrentPrimaryFrame());
-         _videoToolController.createHyperlink(link);
+            // Create a new HyperLink
+            final Link link = new Link(linkName, startFrame, endFrame, _videoToolController.getCurrentPrimaryFrame());
+            _videoToolController.createHyperlink(link);
+         }
+         else
+         {
+            // Display the Error Dialog
+            _videoToolController.displayErrorDialog("A Link with this name already exists");
+         }
 
          // Close the Dialog
          hideDialog();
