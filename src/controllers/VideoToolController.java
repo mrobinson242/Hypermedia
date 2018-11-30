@@ -1,6 +1,7 @@
 package controllers;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import javafx.collections.ObservableMap;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -173,11 +175,12 @@ public class VideoToolController extends AbstractController
     * Constructor
     *
     * @param primaryStage - The primary stage of the application
+    * @param loader - The FXML Loader Utility
     * @param homePageController - The Controller for the Home Page
     */
-   public VideoToolController(final Stage primaryStage, final HomePageController homePageController)
+   public VideoToolController(final Stage primaryStage, final FXMLLoader loader, final HomePageController homePageController)
    {
-      super(FXML_NAME);
+      super(FXML_NAME, loader);
 
       // Initialize Controllers
       _homePageController = homePageController;
@@ -190,9 +193,9 @@ public class VideoToolController extends AbstractController
       _polygonUtil = new PolygonUtil();
 
       // Initialize Dialogs
-      _linkCreationDialog = new LinkCreationDialog(primaryStage, this);
-      _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController);
-      _saveDialog = new SaveDialog(primaryStage, homePageController);
+      _linkCreationDialog = new LinkCreationDialog(primaryStage, this, loader);
+      _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController, loader);
+      _saveDialog = new SaveDialog(primaryStage, homePageController, loader);
 
       // Initialize Video Files to be null
       _primaryVideo = new File("");

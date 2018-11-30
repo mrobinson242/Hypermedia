@@ -3,6 +3,7 @@ package dialogs;
 import controllers.VideoToolController;
 import data.Link;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -46,10 +47,11 @@ public class LinkCreationDialog extends AbstractDialog
     *
     * @param primaryStage        - The Primary Stage of the Application
     * @param videoToolController - The Controller for the Video Tool Tab
+    * @param loader              - The FXML Loader Utility
     */
-   public LinkCreationDialog(final Stage primaryStage, final VideoToolController videoToolController)
+   public LinkCreationDialog(final Stage primaryStage, final VideoToolController videoToolController, final FXMLLoader loader)
    {
-      super(primaryStage, FXML_NAME);
+      super(primaryStage, FXML_NAME, loader);
 
       // Set Title of Dialog
       _dialogStage.setTitle("Link Creator Dialog");

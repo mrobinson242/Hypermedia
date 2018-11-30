@@ -19,6 +19,7 @@ import org.json.simple.parser.ParseException;
 import data.Link;
 import enums.EHypermediaTab;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
@@ -105,25 +106,29 @@ public class HomePageController extends AbstractController
 
    /** Current Video Player File */
    private File _currentVideoPlayerFile;
+
+   /** Desktop File on a System's Computer */
+   private File _desktopPath;
  
    /** Selected Hypermedia Application Tab */
    private EHypermediaTab _selectedTab;
 
    /**
     * Constructor
-    * 
+    *
     * @param primaryStage - The primary stage of the application
+    * @param loader - FXML Loader Utility
     */
-   public HomePageController(final Stage primaryStage)
+   public HomePageController(final Stage primaryStage, final FXMLLoader loader)
    {
-      super(FXML_NAME);
+      super(FXML_NAME, loader);
 
       // Initialize Stage
       _stage = primaryStage;
 
       // Initialize Controllers
-      _videoToolController = new VideoToolController(primaryStage, this);
-      _videoPlayerController = new VideoPlayerController(primaryStage, this);
+      _videoToolController = new VideoToolController(primaryStage, loader, this);
+      _videoPlayerController = new VideoPlayerController(primaryStage, loader, this);
 
       // Default to Video Tool Button Selected
       _selectedTab = EHypermediaTab.VIDEO_TOOL;
@@ -144,6 +149,9 @@ public class HomePageController extends AbstractController
       // Initialize Current Video Files to be null
       _currentVideoToolFile = new File("");
       _currentVideoPlayerFile = new File("");
+
+      // Initialize the Desktop Path
+      _desktopPath = new File(System.getProperty("user.home"), "Desktop/");
 
       // Initialize the File Choosers
       initVideoFileChooser();
@@ -523,18 +531,8 @@ public class HomePageController extends AbstractController
       // Initialize File Chooser
       _videoFileChooser = new FileChooser();
 
-      // Get Current Directory
-      Path currentRelativePath = Paths.get("");
-      String s = currentRelativePath.toAbsolutePath().toString();
-
-      // Create File Path
-      StringBuilder sb = new StringBuilder();
-      sb.append(s);
-      sb.append("/src/videos");
-
-      // Set Path to Video Files
-      final File videoFile = new File(sb.toString());
-      _videoFileChooser.setInitialDirectory(videoFile);
+      //final File videoFile = new File(home);
+      _videoFileChooser.setInitialDirectory(_desktopPath);
    }
 
    /**
@@ -547,22 +545,12 @@ public class HomePageController extends AbstractController
       // Initialize File Chooser
       _saveFileChooser = new FileChooser();
 
-      // TODO: Determine the Type of Extension we want on our file
+      // Determine the Type of Extension we want on our file
       FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
       _saveFileChooser.getExtensionFilters().add(extFilter);
 
-      // Get Current Directory
-      Path currentRelativePath = Paths.get("");
-      String s = currentRelativePath.toAbsolutePath().toString();
-
-      // Create File Path
-      StringBuilder sb = new StringBuilder();
-      sb.append(s);
-      sb.append("/src/files");
-
-      // Set Path to Video Files
-      final File hyperlinkFile = new File(sb.toString());
-      _saveFileChooser.setInitialDirectory(hyperlinkFile);
+      // Set Path to Hyperlink Save Files
+      _saveFileChooser.setInitialDirectory(_desktopPath);
    }
 
    /**
@@ -576,22 +564,12 @@ public class HomePageController extends AbstractController
       // Set Title of Hyperlink File Chooser Window
       _hyperlinkFileChooser.setTitle("Import Hyperlink Video File");
 
-      // TODO: Determine the Type of Extension we want on our file
+      // Determine the Type of Extension we want on our file
       FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
       _hyperlinkFileChooser.getExtensionFilters().add(extFilter);
 
-      // Get Current Directory
-      Path currentRelativePath = Paths.get("");
-      String s = currentRelativePath.toAbsolutePath().toString();
-
-      // Create File Path
-      StringBuilder sb = new StringBuilder();
-      sb.append(s);
-      sb.append("/src/files");
-
-      // Set Path to Video Files
-      final File hyperlinkFile = new File(sb.toString());
-      _hyperlinkFileChooser.setInitialDirectory(hyperlinkFile);
+      // Set Path to Hyperlink Files
+      _hyperlinkFileChooser.setInitialDirectory(_desktopPath);
    }
 
    /**

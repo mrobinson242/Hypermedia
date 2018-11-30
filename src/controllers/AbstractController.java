@@ -19,14 +19,15 @@ public class AbstractController extends Pane
     * Constructor
     *
     * @param fileName - Name of the FXML file to load in
+    * @param loader - The FXML Loader Utility
     */
-   public AbstractController(final String fileName)
+   public AbstractController(final String fileName, final FXMLLoader loader)
    {
       // Set Parameters
       _fileName = fileName;
 
       // Load the FXML
-      loadFxml();
+      loadFxml(loader);
    }
 
    /**
@@ -44,7 +45,7 @@ public class AbstractController extends Pane
     *
     * @param name - The name of the FXML file to load in
     */
-   protected void loadFxml()
+   protected void loadFxml(final FXMLLoader loader)
    {
       try
       {
@@ -52,12 +53,12 @@ public class AbstractController extends Pane
          StringBuilder builder = new StringBuilder();
 
          // Create Path to FXML File
-         builder.append("../fxml/");
+         builder.append("/fxml/");
          builder.append(_fileName);
          String fxmlPath = builder.toString();
 
-         // Create Path to FXML File
-         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+         // Set Attributes of FXML Loader
+         loader.setLocation(getClass().getResource(fxmlPath));
          loader.setController(this);
          loader.setRoot(this);
          loader.load();

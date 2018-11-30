@@ -3,6 +3,7 @@ import java.io.InputStream;
 
 import controllers.HomePageController;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -19,8 +20,11 @@ public class Main extends Application
       InputStream font = Main.class.getResourceAsStream("/resources/fontawesome-webfont.ttf");
       Font fontAwesome = Font.loadFont(font, 10);
 
+      // Initialize FXML Loader Utility
+      FXMLLoader loader = new FXMLLoader();
+
       // Initialize Controllers
-      HomePageController homePage = new HomePageController(stage);
+      HomePageController homePage = new HomePageController(stage, loader);
 
       // Initialize the Scene
       Scene scene = new Scene(homePage.getPane());
@@ -45,5 +49,4 @@ public class Main extends Application
    {
       launch(args);
    }
-
 }

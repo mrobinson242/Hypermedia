@@ -24,11 +24,12 @@ public class AbstractDialog extends Pane implements IDialog
     *
     * @param primaryStage - The primary stage of the application
     * @param fileName - Name of the FXML file to load in
+    * @param loader - The FXML Loader Utility
     */
-   public AbstractDialog(final Stage primaryStage, final String fileName)
+   public AbstractDialog(final Stage primaryStage, final String fileName, final FXMLLoader loader)
    {
       // Load the FXML File
-      loadFxml(fileName);
+      loadFxml(fileName, loader);
 
       // Initialize the Dialog
       _dialogStage = new Stage();
@@ -72,7 +73,7 @@ public class AbstractDialog extends Pane implements IDialog
     *
     * @param name - The name of the FXML file to load in
     */
-   private void loadFxml(final String name)
+   private void loadFxml(final String name, final FXMLLoader loader)
    {
       try
       {
@@ -80,12 +81,12 @@ public class AbstractDialog extends Pane implements IDialog
          StringBuilder builder = new StringBuilder();
 
          // Create Path to FXML File
-         builder.append("../fxml/");
+         builder.append("/fxml/");
          builder.append(name);
          String fxmlPath = builder.toString();
 
          // Create Path to FXML File
-         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+         loader.setLocation(getClass().getResource(fxmlPath));
          loader.setController(this);
          loader.setRoot(this);
          loader.load();
