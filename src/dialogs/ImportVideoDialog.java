@@ -2,6 +2,7 @@ package dialogs;
 
 import controllers.HomePageController;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
@@ -29,10 +30,12 @@ public class ImportVideoDialog extends AbstractDialog
     * Constructor
     *
     * @param primaryStage - The Primary Stage of the Application
+    * @param homePageController - The Controller for the Home Page
+    * @param loader - The FXML Loader Utility
     */
-   public ImportVideoDialog(final Stage primaryStage, final HomePageController homePageController)
+   public ImportVideoDialog(final Stage primaryStage, final HomePageController homePageController, final FXMLLoader loader)
    {
-      super(primaryStage, FXML_NAME);
+      super(primaryStage, FXML_NAME, loader);
 
       // Set Title of Dialog
       _dialogStage.setTitle("Import Video Dialog");

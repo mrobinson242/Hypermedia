@@ -5,6 +5,7 @@ package enums;
  */
 public enum EFontAwesome
 {
+   ERROR_CIRCLE("\uf057"),  // Regular
    FILE_CODE("\uf1c9"),    // Regular
    FILE_VIDEO("\uf1c8"),   // Regular
    LINK("\uf0c1"),         // Regular

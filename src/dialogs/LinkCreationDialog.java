@@ -3,9 +3,11 @@ package dialogs;
 import controllers.VideoToolController;
 import data.Link;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import util.NumericTextField;
 
 /**
  * LinkCreationDialog - Dialog Window to Create 
@@ -18,15 +20,21 @@ public class LinkCreationDialog extends AbstractDialog
 
    @FXML
    private TextField _startFrameTextField;
+   private NumericTextField _numericStartFrameTextField;
 
    @FXML
    private TextField _endFrameTextField;
+   private NumericTextField _numericEndFrameTextField;
 
    @FXML
    private Button _createLinkButton;
 
    @FXML
    private Button _closeButton;
+
+   /** Default Min/Max VALUE for Start/End Frame Text Fields */
+   private static int DEFAULT_MIN = 1;
+   private static int DEFAULT_MAX = 1;
 
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "LinkCreationDialog.fxml";
@@ -39,11 +47,11 @@ public class LinkCreationDialog extends AbstractDialog
     *
     * @param primaryStage        - The Primary Stage of the Application
     * @param videoToolController - The Controller for the Video Tool Tab
-    * @param startFrame          - The Start Frame of the Primary Video
+    * @param loader              - The FXML Loader Utility
     */
-   public LinkCreationDialog(final Stage primaryStage, final VideoToolController videoToolController)
+   public LinkCreationDialog(final Stage primaryStage, final VideoToolController videoToolController, final FXMLLoader loader)
    {
-      super(primaryStage, FXML_NAME);
+      super(primaryStage, FXML_NAME, loader);
 
       // Set Title of Dialog
       _dialogStage.setTitle("Link Creator Dialog");
@@ -54,11 +62,41 @@ public class LinkCreationDialog extends AbstractDialog
       // Initially Disable Create Link Button
       _createLinkButton.setDisable(true);
 
+      // Initialize Numeric TextFields
+      _numericStartFrameTextField = new NumericTextField(_startFrameTextField, DEFAULT_MIN, DEFAULT_MAX);
+      _numericEndFrameTextField = new NumericTextField(_endFrameTextField, DEFAULT_MIN, DEFAULT_MAX);
+
       // Handle Listeners
       handleCreateLinkButton();
       handleCancelButton();
       handleLinkTextField();
+      handleStartFrameTextField();
+      handleEndFrameTextField();
       handleDialogVisibility();
+   }
+
+   /**
+    * updateMinFrame - Updates the Min Frame
+    *
+    * @param minFrame - The Minimum Frame
+    */
+   public void updateMinFrame(final int minFrame)
+   {
+      // Update the Text Fields
+      _numericStartFrameTextField.setMinValue(minFrame);
+      _numericEndFrameTextField.setMinValue(minFrame);
+   }
+
+   /**
+    * updateMaxFrame - Updates the Max Frame
+    *
+    * @param maxFrame - The Maximum Frame
+    */
+   public void updateMaxFrame(final int maxFrame)
+   {
+      // Update the Text Fields
+      _numericStartFrameTextField.setMaxValue(maxFrame);
+      _numericEndFrameTextField.setMaxValue(maxFrame);
    }
 
    /**
@@ -73,13 +111,22 @@ public class LinkCreationDialog extends AbstractDialog
          // Get Name from Text Field
          String linkName = _linkTextField.getText();
 
-         // Get Start/End Frame from Text Field
-         final int startFrame = Integer.parseInt(_startFrameTextField.getText());
-         final int endFrame = Integer.parseInt(_endFrameTextField.getText());
+         // Verify that the Link is Unique
+         if(_videoToolController.verifyUniqueLink(linkName))
+         {
+            // Get Start/End Frame from Text Field
+            final int startFrame = _numericStartFrameTextField.getIntValue();
+            final int endFrame = _numericEndFrameTextField.getIntValue();
 
-         // Create a new HyperLink
-         final Link link = new Link(linkName, startFrame, endFrame, _videoToolController.getCurrentPrimaryFrame());
-         _videoToolController.createHyperlink(link);
+            // Create a new HyperLink
+            final Link link = new Link(linkName, startFrame, endFrame, _videoToolController.getCurrentPrimaryFrame());
+            _videoToolController.createHyperlink(link);
+         }
+         else
+         {
+            // Display the Error Dialog
+            _videoToolController.displayErrorDialog("A Link with this name already exists");
+         }
 
          // Close the Dialog
          hideDialog();
@@ -104,7 +151,7 @@ public class LinkCreationDialog extends AbstractDialog
     */
    private void handleDialogVisibility()
    {
-      // On Dialgo Show Action
+      // On Dialog Show Action
       _dialogStage.setOnShowing(event ->
       {
          // Get the Current Start Frame from the Video Tool Tab
@@ -124,15 +171,70 @@ public class LinkCreationDialog extends AbstractDialog
    }
 
    /**
+    * handleStartFrameTextField - Handles Listeners for Start Frame Text Field
+    */
+   private void handleStartFrameTextField()
+   {
+      // Text Listener on Start Frame Text Field
+      _startFrameTextField.textProperty().addListener((observable, oldValue, newValue) ->
+      {
+         // Check if Link Text Field and End Frame Text Field also are not Empty
+         if(!_linkTextField.getText().isEmpty() && !_endFrameTextField.getText().isEmpty())
+         {
+            // Enable/Disable Create Link Button 
+            // based on if Text Field has input
+            _createLinkButton.setDisable(newValue.isEmpty());
+         }
+         else
+         {
+            // Disable Create Link Button 
+            _createLinkButton.setDisable(true);
+         }
+      });
+   }
+
+   /**
+    * handleEndFrameTextField - Handles Listeners for End Frame Text Field
+    */
+   private void handleEndFrameTextField()
+   {
+      // Text Listener on End Frame Text Field
+      _endFrameTextField.textProperty().addListener((observable, oldValue, newValue) ->
+      {
+         // Check if Link Text Field and Start Frame Text Field also are not Empty
+         if(!_linkTextField.getText().isEmpty() && !_startFrameTextField.getText().isEmpty())
+         {
+            // Enable/Disable Create Link Button 
+            // based on if Text Field has input
+            _createLinkButton.setDisable(newValue.isEmpty());
+         }
+         else
+         {
+            // Disable Create Link Button 
+            _createLinkButton.setDisable(true);
+         }
+      });
+   }
+
+   /**
     * handleLinkTextField - Handles the Listener on the Link Text Field
     */
    private void handleLinkTextField()
    {
+      // Text Listener on Link Text Field
       _linkTextField.textProperty().addListener((observable, oldValue, newValue) ->
       {
-         // Enable/Disable Create Link Button 
-         // based on if Text Field has input
-         _createLinkButton.setDisable(newValue.isEmpty());
+         if(!_startFrameTextField.getText().isEmpty() && !_endFrameTextField.getText().isEmpty())
+         {
+            // Enable/Disable Create Link Button 
+            // based on if Text Field has input
+            _createLinkButton.setDisable(newValue.isEmpty());
+         }
+         else
+         {
+            // Disable Create Link Button 
+            _createLinkButton.setDisable(true);
+         }
       });
    }
 }

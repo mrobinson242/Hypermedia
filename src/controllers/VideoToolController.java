@@ -1,11 +1,13 @@
 package controllers;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
 import data.Link;
 import data.Point;
+import dialogs.ErrorDialog;
 import dialogs.ImportVideoDialog;
 import dialogs.LinkCreationDialog;
 import dialogs.SaveDialog;
@@ -21,6 +23,7 @@ import javafx.collections.ObservableMap;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -156,7 +159,10 @@ public class VideoToolController extends AbstractController
    private MediaPlayer _secondaryMediaPlayer;
 
    /** Dialog Window for Link Creation */
-   private IDialog _linkCreationDialog;
+   private LinkCreationDialog _linkCreationDialog;
+
+   /** Dialog Window for Errors */
+   private ErrorDialog _errorDialog;
 
    /** Dialog Window for Importing Videos */
    private IDialog _importVideoDialog;
@@ -176,17 +182,22 @@ public class VideoToolController extends AbstractController
    /** Observable List of Link Data */
    private ObservableList<Link> _linkData;
 
-   ObservableMap<Link, Boolean> _removed;
+   /** Map to Determine which Link to Highlight in Table */
+   private final ObservableMap<Link, Boolean> _highlightLink;
+
+   /** PseudoClass for Highlighting a Link in the Table */
+   private final PseudoClass _highlightClass;
 
    /**
     * Constructor
     *
     * @param primaryStage - The primary stage of the application
+    * @param loader - The FXML Loader Utility
     * @param homePageController - The Controller for the Home Page
     */
-   public VideoToolController(final Stage primaryStage, final HomePageController homePageController)
+   public VideoToolController(final Stage primaryStage, final FXMLLoader loader, final HomePageController homePageController)
    {
-      super(FXML_NAME);
+      super(FXML_NAME, loader);
 
       // Initialize Controllers
       _homePageController = homePageController;
@@ -199,9 +210,10 @@ public class VideoToolController extends AbstractController
       _polygonUtil = new PolygonUtil();
 
       // Initialize Dialogs
-      _linkCreationDialog = new LinkCreationDialog(primaryStage, this);
-      _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController);
-      _saveDialog = new SaveDialog(primaryStage, homePageController);
+      _linkCreationDialog = new LinkCreationDialog(primaryStage, this, loader);
+      _importVideoDialog = new ImportVideoDialog(primaryStage, homePageController, loader);
+      _saveDialog = new SaveDialog(primaryStage, homePageController, loader);
+      _errorDialog = new ErrorDialog(primaryStage, loader);
 
       // Initialize Video Files to be null
       _primaryVideo = new File("");
@@ -283,23 +295,11 @@ public class VideoToolController extends AbstractController
       // Handle Hyperlink Selection
       handleHyperlinkSelection();
 
-      _removed = FXCollections.observableHashMap();
-      PseudoClass highlightClass = PseudoClass.getPseudoClass("highlight");
+      // Initialize Observable Map that determines which Link to Highlight
+      _highlightLink = FXCollections.observableHashMap();
 
-      _linkTableView.setRowFactory(rf ->
-      {
-         TableRow<Link> link = new TableRow<Link>();
-
-         ObjectBinding<Boolean> binding = Bindings.valueAt(_removed, link.itemProperty());
-         binding.addListener((observable, oldValue, newValue) -> link.pseudoClassStateChanged(highlightClass, newValue != null && newValue));
-
-         return link;
-      });
-
-      Rectangle clip = new Rectangle();
-      clip.widthProperty().bind(_primaryVideoPane.widthProperty());
-      clip.heightProperty().bind(_primaryVideoPane.heightProperty());
-      _primaryVideoPane.setClip(clip);
+      // Initialize PsuedoClass for Highlighting Links
+      _highlightClass = PseudoClass.getPseudoClass("highlight");
    }
 
    /**
@@ -421,6 +421,9 @@ public class VideoToolController extends AbstractController
       // Add Link to Observable List of Link Data
       _linkData.add(link);
 
+      // Select the newly created link
+      _linkTableView.getSelectionModel().select(link);
+
       // Display Links
       displayLinks(_currentPrimaryFrame);
    }
@@ -505,6 +508,45 @@ public class VideoToolController extends AbstractController
 
       // Enable New File Button
       _newFileButton.setDisable(false);
+   }
+
+   /**
+    * displayErrorDialog - Displays the Error Dialog
+    */
+   public void displayErrorDialog(final String errorMessage)
+   {
+      // Update Error MEssage
+      _errorDialog.setErrorMessage(errorMessage);
+ 
+      // Display the Error Dialog
+      _errorDialog.showDialog();
+   }
+
+   /**
+    * verifyUniqueLink - Verifies that another Link does not have
+    *                    the same name
+    *
+    * @param linkName - The Link Name
+    * @return boolean
+    */
+   public boolean verifyUniqueLink(final String linkName)
+   {
+      // Initialize Unique Indicator
+      boolean isUnique = true;
+
+      // Iterate over all the current links
+      for(Link link : _linkData)
+      {
+         // Check if an Existing Link has the same name
+         if(link.getLinkName().equals(linkName))
+         {
+            // Set Unique Indicator to false
+            isUnique = false;
+            break;
+         }
+      }
+
+      return isUnique;
    }
 
    /**
@@ -705,30 +747,20 @@ public class VideoToolController extends AbstractController
     */
    private void handleLinkSelectionTable()
    {
-      // Click Listener
-      EventHandler<MouseEvent> clickListener = event ->
+      // Handle Selection of a Row in the Link Selection Table
+      _linkTableView.setRowFactory(rf ->
       {
-         System.out.println("Register Mouse Click");
+         // Initialize Link Table Row
+         TableRow<Link> link = new TableRow<Link>();
 
-         TableRow<Link> row = (TableRow<Link>)event.getTarget();
-         
-         // Check if Row is Empty
-         if(!row.isEmpty() && row.isSelected())
-         {
-            _linkTableView.getSelectionModel().clearSelection();
-         }
-      };
+         // Create Highlight Binding
+         ObjectBinding<Boolean> binding = Bindings.valueAt(_highlightLink, link.itemProperty());
 
-      _linkTableView.setRowFactory(tv ->
-      {
-         TableRow<Link> row = new TableRow<Link>();
+         // Add Listener to binding Highlighting CSS to selected row
+         binding.addListener((observable, oldValue, newValue) -> link.pseudoClassStateChanged(_highlightClass, newValue != null && newValue));
 
-         // Mouse Clicked Listener
-         row.setOnMouseClicked(clickListener);
-
-         return row;
+         return link;
       });
-
 
       // Selection Listener for Link Selection Table
       _linkTableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Link>()
@@ -736,9 +768,6 @@ public class VideoToolController extends AbstractController
          @Override
          public void changed(ObservableValue<? extends Link> arg0, Link unselectedLink, Link selectedLink)
          {
-            // TODO: Remove Debug Statement
-            System.out.println("SELECTION CHANGE");
-
             // Null Check Selected Link
             if(selectedLink != null)
             {
@@ -748,7 +777,18 @@ public class VideoToolController extends AbstractController
                // Update Link Selected State
                selectedLink.setIsSelected(true);
 
-               _removed.put(selectedLink, Boolean.TRUE);
+               // Highlight the Link in the Selection Table
+               _highlightLink.put(selectedLink, Boolean.TRUE);
+
+               // Get From Video from Selected Link
+               File fromVideo = selectedLink.getFromVideo();
+
+               // If Link's From Video matches current Video
+               if(fromVideo.equals(_primaryVideo))
+               {
+                  // Update Primary Video Slider to be at Link's Start Time
+                  _primaryVideoSlider.setValue(selectedLink.getStartFrame());
+               }
             }
 
             // Iterate over the Links
@@ -851,7 +891,7 @@ public class VideoToolController extends AbstractController
 
       // Set Slider Properties
       _primaryVideoSlider.setMin(MIN_FRAME);
-      _primaryVideoSlider.setMax(9000);
+      _primaryVideoSlider.setMax(totalFrames);
       _primaryVideoSlider.setValue(1);
       _primaryVideoSlider.setBlockIncrement(1.0);
       _primaryVideoSlider.setMajorTickUnit(1.0);
@@ -860,6 +900,10 @@ public class VideoToolController extends AbstractController
       // Show Primary Video Frame Labels
       _primaryVideoFrame.setVisible(true);
       _primaryVideoFrameLabel.setVisible(true);
+
+      // Update Min/Max Frame in Link Creation Dialog
+      _linkCreationDialog.updateMinFrame(MIN_FRAME);
+      _linkCreationDialog.updateMaxFrame(totalFrames);
    }
 
    /**

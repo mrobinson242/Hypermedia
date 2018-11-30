@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 
 import enums.EFontAwesome;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
@@ -49,11 +50,12 @@ public class VideoPlayerController extends AbstractController
     * Constructor
     *
     * @param primaryStage - The primary stage of the application
+    * @param loader - The FXML Loader Utility
     * @param homePageController - The Controller for the Home Page
     */
-   public VideoPlayerController(final Stage primaryStage, final HomePageController homePageController)
+   public VideoPlayerController(final Stage primaryStage, final FXMLLoader loader, final HomePageController homePageController)
    {
-      super(FXML_NAME);
+      super(FXML_NAME, loader);
 
       // Initialize the Stage of the Primary Window
       _primaryStage = primaryStage;
