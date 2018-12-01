@@ -109,9 +109,18 @@ public class HomePageController extends AbstractController
 
    /** Desktop File on a System's Computer */
    private File _desktopPath;
- 
+
    /** Selected Hypermedia Application Tab */
    private EHypermediaTab _selectedTab;
+
+   /** The Start Frame of the Videos */
+   private static final int MIN_FRAME = 1;
+
+   /** Boolean Indicator if Create Link is Available */
+   private boolean _createLinkAvailable;
+
+   /** Boolean Indicator if Delete Link is Available */
+   private boolean _deleteLinkAvailable;
 
    /**
     * Constructor
@@ -133,6 +142,10 @@ public class HomePageController extends AbstractController
       // Default to Video Tool Button Selected
       _selectedTab = EHypermediaTab.VIDEO_TOOL;
       _videoToolButton.setSelected(true);
+
+      // Default Menu Item Enabled/Disabled Indicators
+      _createLinkAvailable = false;
+      _deleteLinkAvailable = false;
 
       // Disable Unavailable Video Tool Menu Items
       _createLinkMenuItem.setDisable(true);
@@ -165,7 +178,8 @@ public class HomePageController extends AbstractController
       // Handle Menu Item Listeners
       importPrimaryVideoSelection();
       importSecondaryVideoSelection();
-      createLinkSelection();
+      handleCreateLinkSelection();
+      handleDeleteLinkSelection();
       handleNewFileSelection();
       handleOpenFileSelection();
       handleSaveSelection();
@@ -181,11 +195,58 @@ public class HomePageController extends AbstractController
       _exitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN));
 
       // Set Option Menu Accelerators
-      _createLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.ALT_DOWN));
-      _deleteLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.ALT_DOWN));
+      _createLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN));
+      _deleteLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN));
       _playVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN));
       _pauseVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.U, KeyCombination.ALT_DOWN));
       _stopVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN));
+   }
+
+   /**
+    * setCreateLinkState - Updates the Enabled/Disable State
+    *                         of the Create Link Option
+    *
+    * @param isEnabled - Is Menu Item Enabled
+    */
+   public void setCreateLinkState(final boolean isEnabled)
+   {
+      // Update Create Link Availability State
+      _createLinkAvailable = isEnabled;
+
+      // Check that current tab is Hypermedia Tab
+      if(EHypermediaTab.VIDEO_TOOL.equals(_selectedTab))
+      {
+         // Update Enable/Disable State of Item
+         _createLinkMenuItem.setDisable(!isEnabled);
+      }
+      else
+      {
+         // Disable Create Link Menu Option
+         _createLinkMenuItem.setDisable(true);
+      }
+   }
+
+   /**
+    * setDeleteLinkState - Updates the Enabled/Disabled State
+    *
+    * @param isEnabled - Is Menu Item Enabled
+    */
+   public void setDeleteLinkState(final boolean isEnabled)
+   {
+      // Update Delete Link Availability State
+      _deleteLinkAvailable = isEnabled;
+
+      // Check that current tab is Hypermedia Tab
+      if(EHypermediaTab.VIDEO_TOOL.equals(_selectedTab))
+      {
+         // Update Enable/Disable State of Item
+         _deleteLinkMenuItem.setDisable(!isEnabled);
+      }
+      else
+      {
+         // Disable Create Link Menu Option
+         _deleteLinkMenuItem.setDisable(true);
+      }
    }
 
    /**
@@ -204,7 +265,7 @@ public class HomePageController extends AbstractController
       if(null != primaryVideo)
       {
          // Update Video Tool with Selected File
-         _videoToolController.setPrimaryVideo(primaryVideo);
+         _videoToolController.setPrimaryVideo(primaryVideo, MIN_FRAME);
       }
    }
 
@@ -224,7 +285,7 @@ public class HomePageController extends AbstractController
       if(null != secondaryVideo)
       {
          // Update Video Tool with Selected File
-         _videoToolController.setSecondaryVideo(secondaryVideo);
+         _videoToolController.setSecondaryVideo(secondaryVideo, MIN_FRAME);
       }
    }
 
@@ -349,6 +410,9 @@ public class HomePageController extends AbstractController
       // Button Listener
       _videoToolButton.setOnAction(event ->
       {
+         // Updated Selected Tab
+         _selectedTab = EHypermediaTab.VIDEO_TOOL;
+
          // Clear Content Pane
          _contentPane.getChildren().clear();
 
@@ -360,7 +424,8 @@ public class HomePageController extends AbstractController
          _videoPlayerButton.setSelected(false);
 
          // Enable Menu Items
-         _createLinkMenuItem.setDisable(false);
+         setCreateLinkState(_createLinkAvailable);
+         setDeleteLinkState(_deleteLinkAvailable);
          _saveMenuItem.setDisable(false);
          _saveAsMenuItem.setDisable(false);
 
@@ -404,21 +469,37 @@ public class HomePageController extends AbstractController
 
          // Disable Menu Items
          _createLinkMenuItem.setDisable(true);
+         _deleteLinkMenuItem.setDisable(true);
          _saveMenuItem.setDisable(true);
          _saveAsMenuItem.setDisable(true);
       });
    }
 
    /**
-    * createLinkSelection - Handles the Selection of
-    *                       the Create Link Menu Item
+    * handleCreateLinkSelection - Handles the Selection of
+    *                             the Create Link Menu Item
     */
-   private void createLinkSelection()
+   private void handleCreateLinkSelection()
    {
       // Process Selection
       _createLinkMenuItem.setOnAction(event ->
       {
-         // TODO: Implement
+         //  Show the Create Link Dialog
+         _videoToolController.showCreateLinkDialog();
+      });
+   }
+
+   /**
+    * handleDeleteLinkSelection - Handles the Selection of
+    *                             the Delete Link Menu Item
+    */
+   private void handleDeleteLinkSelection()
+   {
+      // Process Selection
+      _deleteLinkMenuItem.setOnAction(event ->
+      {
+         // Delete the Link
+         _videoToolController.deleteHyperlink();
       });
    }
 

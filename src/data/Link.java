@@ -414,7 +414,7 @@ public class Link
          if(linkBox != null)
          {
             // If Link is Selected and Current Frame is either Start/End Frame
-            if(_isSelected && (_startFrame.intValue() == _currentFrame) || (_endFrame.intValue() == _currentFrame))
+            if(_isSelected && ((_startFrame.intValue() == _currentFrame) || (_endFrame.intValue() == _currentFrame)))
             {
                // Allow Link to be edited
                linkBox.setIsEditable(true);

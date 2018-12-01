@@ -1,7 +1,6 @@
 package controllers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -40,7 +39,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import util.PolygonUtil;
@@ -264,6 +262,7 @@ public class VideoToolController extends AbstractController
       handleSecondarySlider();
 
       // Initialize List of Link Data */
+      //_linkData = FXCollections.observableArrayList(new Link("1", 1, 1, 1), new Link("2", 1, 1, 1), new Link("3", 1, 1, 1) ,new Link("4", 1, 1, 1) ,new Link("5", 1, 1, 1) ,new Link("6", 1, 1, 1) ,new Link("7", 1, 1, 1), new Link("8", 1, 1, 1));
       _linkData = FXCollections.observableArrayList();
 
       // Initialize Data of Link Table View
@@ -292,9 +291,10 @@ public class VideoToolController extends AbstractController
    /**
     * setPrimaryVideo - Sets the Current Primary Video
     *
-    * @param file - The Primary Video
+    * @param file     - The Primary Video
+    * @param frameNum - The Current Frame
     */
-   public void setPrimaryVideo(final File primaryVideo)
+   public void setPrimaryVideo(final File primaryVideo, final int frameNum)
    {
       // Update the Primary Video
       _primaryVideo = primaryVideo;
@@ -322,13 +322,17 @@ public class VideoToolController extends AbstractController
                updatePrimarySlider();
 
                // Update Current Primary Frame
-               _currentPrimaryFrame = MIN_FRAME;
+               _currentPrimaryFrame = frameNum;
+
+               // Set Current Primary Slider Value
+               _primaryVideoSlider.setValue(_currentPrimaryFrame);
 
                // Null Check both Primary and Secondary Video Tool
                if(_primaryVideo.exists() && _secondaryVideo.exists())
                {
                   // Enable Linking Tool
                   _createLinkButton.setDisable(false);
+                  _homePageController.setCreateLinkState(true);
                }
 
                // Update Displayed Links
@@ -347,8 +351,9 @@ public class VideoToolController extends AbstractController
     * setSecondaryVideo - Sets the Current Secondary Video
     *
     * @param file - The Secondary Video
+    * @param frameNum - The Current Frame
     */
-   public void setSecondaryVideo(final File secondaryVideo)
+   public void setSecondaryVideo(final File secondaryVideo, final int frameNum)
    {
       // Update the Secondary Video
       _secondaryVideo = secondaryVideo;
@@ -375,13 +380,17 @@ public class VideoToolController extends AbstractController
                updateSecondarySlider();
 
                // Update Current Secondary Frame
-               _currentSecondaryFrame = MIN_FRAME;
+               _currentSecondaryFrame = frameNum;
+
+               // Set Current Secondary Slider Value
+               _secondaryVideoSlider.setValue(_currentSecondaryFrame);
 
                // Null Check both Primary and Secondary Video Tool
                if(_primaryVideo.exists() && _secondaryVideo.exists())
                {
                   // Enable Linking Tool
                   _createLinkButton.setDisable(false);
+                  _homePageController.setCreateLinkState(true);
                }
             }
          });
@@ -413,6 +422,40 @@ public class VideoToolController extends AbstractController
 
       // Display Links
       displayLinks(_currentPrimaryFrame);
+   }
+   
+   /**
+    * deleteHyperlink - Deletes a Hyperlink
+    */
+   public void deleteHyperlink()
+   {
+      // Get the Selected Link
+      final Link selectedLink = _linkTableView.getSelectionModel().getSelectedItem();
+
+      // Null Check Selected Link
+      if(selectedLink != null)
+      {
+         // Get Start/End Frames for Link
+         final int startFrame = selectedLink.getStartFrame();
+         final int endFrame = selectedLink.getEndFrame();
+
+         // Iterate over all the Frames the Link is in
+         for(int i = startFrame; i <= endFrame; ++i)
+         {
+            // Remove Link from Primary Video Pane
+            _primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup(i));
+         }
+
+         // Remove Link from Table
+         _linkTableView.getItems().remove(selectedLink);
+
+         // Select View
+         _linkTableView.getSelectionModel().clearSelection();
+
+         // Disable Delete Link Button
+         _deleteLinkButton.setDisable(true);
+         _homePageController.setDeleteLinkState(false);
+      }
    }
 
    /**
@@ -506,6 +549,15 @@ public class VideoToolController extends AbstractController
  
       // Display the Error Dialog
       _errorDialog.showDialog();
+   }
+
+   /**
+    * showCreateLinkDialog
+    */
+   public void showCreateLinkDialog()
+   {
+      // Show the Link Creation Dialog
+      _linkCreationDialog.showDialog();
    }
 
    /**
@@ -631,7 +683,7 @@ public class VideoToolController extends AbstractController
       _createLinkButton.setOnAction(event ->
       {
          // Show the Link Creation Dialog
-         _linkCreationDialog.showDialog();
+         showCreateLinkDialog();
       });
    }
 
@@ -655,35 +707,11 @@ public class VideoToolController extends AbstractController
     */
    private void handleDeleteLinkButton()
    {
-      // Process 
+      // Process Selection of the Delete Link Button
       _deleteLinkButton.setOnAction(event ->
       {
-         // Get the Selected Link
-         final Link selectedLink = _linkTableView.getSelectionModel().getSelectedItem();
-
-         // Null Check Selected Link
-         if(selectedLink != null)
-         {
-            // Get Start/End Frames for Link
-            final int startFrame = selectedLink.getStartFrame();
-            final int endFrame = selectedLink.getEndFrame();
-
-            // Iterate over all the Frames the Link is in
-            for(int i = startFrame; i <= endFrame; ++i)
-            {
-               // Remove Link from Primary Video Pane
-               _primaryVideoPane.getChildren().remove(selectedLink.getBoundingGroup(i));
-            }
-
-            // Remove Link from Table
-            _linkTableView.getItems().remove(selectedLink);
-
-            // Select View
-            _linkTableView.getSelectionModel().clearSelection();
-
-            // Disable Delete Link Button
-            _deleteLinkButton.setDisable(true);
-         }
+         // Delete the Hyperlink
+         deleteHyperlink();
       });
    }
 
@@ -759,6 +787,7 @@ public class VideoToolController extends AbstractController
             {
                // Enable Delete Link Button
                _deleteLinkButton.setDisable(false);
+               _homePageController.setDeleteLinkState(true);
 
                // Update Link Selected State
                selectedLink.setIsSelected(true);
@@ -766,14 +795,38 @@ public class VideoToolController extends AbstractController
                // Highlight the Link in the Selection Table
                _highlightLink.put(selectedLink, Boolean.TRUE);
 
-               // Get From Video from Selected Link
-               File fromVideo = selectedLink.getFromVideo();
+               // Get To/From Video from Selected Link
+               final File fromVideo = selectedLink.getFromVideo();
+               final File toVideo = selectedLink.getToVideo();
 
-               // If Link's From Video matches current Video
+               // Get Start Frame
+               final int startFrame = selectedLink.getStartFrame();
+
+               // Get To Frame
+               final int toFrame = selectedLink.getToFrame();
+
+               // Check if Link's From Video matches current Video
                if(fromVideo.equals(_primaryVideo))
                {
                   // Update Primary Video Slider to be at Link's Start Time
-                  _primaryVideoSlider.setValue(selectedLink.getStartFrame());
+                  _primaryVideoSlider.setValue(startFrame);
+               }
+               else
+               {
+                  // Load up Link's From Video at the Start Frame
+                  setPrimaryVideo(fromVideo, startFrame);
+               }
+
+               // Check if Link's To Video matches the current Video
+               if(toVideo.equals(_secondaryVideo))
+               {
+                  // Update Primary Video Slider to be at Link's Start Time
+                  _secondaryVideoSlider.setValue(toFrame);
+               }
+               else
+               {
+                  // Load up Link's To Video at the To Frame
+                  setSecondaryVideo(toVideo, toFrame);
                }
             }
 
@@ -837,14 +890,14 @@ public class VideoToolController extends AbstractController
       {
          public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
-            // Null Check Primary Video
+            // Null Check Secondary Video
             if(_secondaryVideo != null)
             {
                // Update Frame Count Label
                _secondaryVideoFrame.setText(String.valueOf(newVal.intValue()));
 
                // Update Current Secondary Frame
-               _currentPrimaryFrame = newVal.intValue();
+               _currentSecondaryFrame = newVal.intValue();
 
                // Get the Current Frame Time (ms)
                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
@@ -909,7 +962,7 @@ public class VideoToolController extends AbstractController
 
       // Set Slider Properties
       _secondaryVideoSlider.setMin(MIN_FRAME);
-      _secondaryVideoSlider.setMax(9000);
+      _secondaryVideoSlider.setMax(totalFrames);
       _secondaryVideoSlider.setValue(1);
       _secondaryVideoSlider.setBlockIncrement(1.0);
       _secondaryVideoSlider.setMajorTickUnit(1.0);
