@@ -301,13 +301,13 @@ public class HomePageController extends AbstractController
       if(hyperlinkFile != null)
       {
          // Upload Data from File
-         Map<Integer, ArrayList<Link>> frameToLinkMap = uploadDataFromFile(hyperlinkFile);
+         final ArrayList<Link> linkData = uploadDataFromFile(hyperlinkFile);
 
          // Check if Video Tool Tab Selected
          if(EHypermediaTab.VIDEO_TOOL.equals(_selectedTab))
          {
             // Open up the Hyperlink File in the Video Tool
-            _videoToolController.openHyperlinkFile(hyperlinkFile, frameToLinkMap);
+             _videoToolController.openHyperlinkFile(hyperlinkFile, linkData);
          }
          else
          {
@@ -656,10 +656,10 @@ public class HomePageController extends AbstractController
    /**
     * uploadDataFromFile - Reads in Data from Hyperlink File
     */
-   private Map<Integer, ArrayList<Link>> uploadDataFromFile(final File file)
+   private ArrayList<Link> uploadDataFromFile(final File file)
    {
-      // Initialize Frame To Link Map
-      Map<Integer, ArrayList<Link>> frameToLinkMap = new HashMap<Integer, ArrayList<Link>>();
+      // Initialize List of links
+      ArrayList<Link> linkData = new ArrayList<Link>();
 
       // Initialize JSON Parser
       JSONParser parser = new JSONParser();
@@ -668,24 +668,29 @@ public class HomePageController extends AbstractController
       {
          Object obj = parser.parse(new FileReader(file));
          JSONObject jsonObject = (JSONObject) obj;
-         Iterator<String> frames = jsonObject.keySet().iterator();
+         Iterator<String> names = jsonObject.keySet().iterator();
 
-         // Iterate over all the Frames
-         while(frames.hasNext())
+         // Iterate over all the Links
+         while(names.hasNext())
          {
-            String frame = frames.next();
-            JSONArray frameLinks = (JSONArray) jsonObject.get(frame);
-            Iterator allLinks = frameLinks.iterator();
-            ArrayList<Link> linkList = new ArrayList<Link>();
-            while (allLinks.hasNext())
+            // Get all information about each link including toVideo, fromVideo, and frame numbers.
+            String name = names.next();
+            JSONObject linkInfo = (JSONObject) jsonObject.get(name);
+            String toVideo = (String) linkInfo.get("toVideo");
+            String fromVideo = (String) linkInfo.get("fromVideo");
+            int startFrame = ((Long) linkInfo.get("startFrame")).intValue();
+            int endFrame = ((Long) linkInfo.get("endFrame")).intValue();
+            int toFrame = ((Long) linkInfo.get("toFrame")).intValue();
+
+            // Get info about the bouding box coordinates for each frame in the link.
+            JSONObject frameInfo = (JSONObject) linkInfo.get("boxInfo");
+            Iterator<String> frames = frameInfo.keySet().iterator();
+            HashMap<Integer, ArrayList<Double>> framePoints = new HashMap<Integer, ArrayList<Double>>();
+            while (frames.hasNext())
             {
-               JSONObject linkInfo = (JSONObject) allLinks.next();
-               String name = (String) linkInfo.get("name");
-               String toVideo = (String) linkInfo.get("toVideo");
-               String fromVideo = (String) linkInfo.get("fromVideo");
-               //int toFrame = (int) linkInfo.get("toFrame");
-               int toFrame = 0;
-               JSONArray pointInfo = (JSONArray) linkInfo.get("points");
+               String frame = (String) frames.next();
+               JSONArray pointInfo = (JSONArray) frameInfo.get(frame);
+               
                Iterator points = pointInfo.iterator();
                ArrayList<Double> pList = new ArrayList<Double>();
 
@@ -695,25 +700,29 @@ public class HomePageController extends AbstractController
                   pList.add((Double) points.next());
                }
 
-               Link now = new Link(name, 0, 0, fromVideo, toVideo, toFrame, pList);
-               linkList.add(now);
+               framePoints.put(Integer.parseInt(frame), pList);
             }
-            frameToLinkMap.put(Integer.parseInt(frame), linkList);
+            // Reconstruct links given the information retrieved from the file and add them to the list data structure.
+            Link now = new Link(name, startFrame, endFrame, startFrame, fromVideo, toVideo, toFrame, framePoints);
+            linkData.add(now);
          }
       } 
       catch (FileNotFoundException e)
       {
+         // Log Error
          e.printStackTrace();
       }
       catch (IOException e)
       {
+         // Log Error
          e.printStackTrace();
       }
       catch (ParseException e)
       {
+         // Log Error
          e.printStackTrace();
       }
-
-      return frameToLinkMap;
+      // Return a list of all the links that hve been constructed.
+      return linkData;
    }
 }
