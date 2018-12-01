@@ -496,30 +496,23 @@ public class VideoToolController extends AbstractController
     */
    public void openHyperlinkFile(File file, ArrayList<Link> linkData)
    {
-       _linkData = FXCollections.observableArrayList(linkData);
        // Check if current file matches Hyperlink File
        if(!_hyperlinkFilename.equals(file.getName()))
        {
+          // Update with Latest Data
+          _linkData.clear();
+          _linkData.setAll(linkData);
+
           // Update Filename Label
           _hyperlinkFilename.setVisible(true);
           _hyperlinkFilename.setText(file.getName());
 
-//          // Update Frame To Link Map
-//          _frameToLinkMap = frameToLinkMap;
-//
-//          // Iterate over each Frame in Map
-//          for(final Integer frame : _frameToLinkMap.keySet())
-//          {
-//             // Get the Link List
-//             ArrayList<Link> linkList = _frameToLinkMap.get(frame);
-//
-//             // Iterate over the Link List
-//             for(final Link link : linkList)
-//             {
-//                // Add Link to ListView
-//                //_selectLinkView.getItems().add(link);
-//             }
-//          }
+          // Get First Link in Hyperlink File
+          final Link link = _linkData.get(0);
+
+          // Update Videos
+          setPrimaryVideo(link.getFromVideo(), link.getStartFrame());
+          setSecondaryVideo(link.getToVideo(), link.getToFrame());
 
           // Update Links
           displayLinks(_currentPrimaryFrame);
