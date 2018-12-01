@@ -46,6 +46,8 @@ public class VideoPlayerController extends AbstractController
    /** Stage of the Application Window */
    private final Stage _primaryStage;
 
+   
+
    /**
     * Constructor
     *
@@ -102,7 +104,7 @@ public class VideoPlayerController extends AbstractController
       // Create File Path
       StringBuilder sb = new StringBuilder();
       sb.append(s);
-      sb.append("/src/files");
+      sb.append("/files");
 
       // Set Path to Video Files
       final File hyperlinkFile = new File(sb.toString());
@@ -169,6 +171,13 @@ public class VideoPlayerController extends AbstractController
     */
    private void loadVideo()
    {
-      // TODO: Implement
+      
    }
+
+   /**
+    * setPrimaryVideo - Sets the Current Primary Video
+    *
+    * @param file - The Primary Video
+    */
+
 }

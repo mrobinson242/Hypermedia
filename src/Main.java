@@ -7,6 +7,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import controllers.VideoToolController;
+import controllers.VideoPlayerController;
 
 /**
  * Main
