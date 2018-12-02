@@ -6,5 +6,6 @@ package enums;
 public enum EHypermediaTab
 {
    VIDEO_TOOL,
-   VIDEO_PLAYER
+   VIDEO_PLAYER,
+   MP4_CONVERTER
 }

@@ -211,6 +211,18 @@
    -fx-accent: milanoRed;
 }
 
+/** CSS for Progress Bar */
+.mp4ProgressBar .track
+{
+   -fx-background-color: tundora;
+}
+
+/** CSS for Video Progress Bar */
+.mp4ProgressBar
+{
+   -fx-accent: milanoRed;
+}
+
 /** CSS for Slider Track */
 .frameSlider .track
 {

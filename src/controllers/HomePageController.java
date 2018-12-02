@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -81,6 +78,9 @@ public class HomePageController extends AbstractController
    private ToggleButton _videoPlayerButton;
 
    @FXML
+   private ToggleButton _mp4ConverterButton;
+
+   @FXML
    private Stage _stage;
 
    /** Video Tool Controller */
@@ -88,6 +88,9 @@ public class HomePageController extends AbstractController
 
    /** Video Player Controller */
    private VideoPlayerController _videoPlayerController;
+
+   /** MP4 Converter Controller */
+   private MP4ConverterController _mp4ConverterController;
 
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "HomePage.fxml";
@@ -138,6 +141,7 @@ public class HomePageController extends AbstractController
       // Initialize Controllers
       _videoToolController = new VideoToolController(primaryStage, loader, this);
       _videoPlayerController = new VideoPlayerController(primaryStage, loader, this);
+      _mp4ConverterController = new MP4ConverterController(primaryStage, loader);
 
       // Default to Video Tool Button Selected
       _selectedTab = EHypermediaTab.VIDEO_TOOL;
@@ -174,6 +178,7 @@ public class HomePageController extends AbstractController
       // Handle Button Listeners
       handleVideoToolButtonSelection();
       handleVideoPlayerButtonSelection();
+      handleMP4ConverterButtonSelection();
 
       // Handle Menu Item Listeners
       importPrimaryVideoSelection();
@@ -419,9 +424,10 @@ public class HomePageController extends AbstractController
          // Add Video Tool to Content Pane
          _contentPane.getChildren().add(_videoToolController.getPane());
 
-         // DeSelect Video Player Button
+         // Select/DeSelect Video Tool Button
          _videoToolButton.setSelected(true);
          _videoPlayerButton.setSelected(false);
+         _mp4ConverterButton.setSelected(false);
 
          // Enable Menu Items
          setCreateLinkState(_createLinkAvailable);
@@ -454,9 +460,10 @@ public class HomePageController extends AbstractController
          // Add Video Tool to Content Pane
          _contentPane.getChildren().add(_videoPlayerController.getPane());
 
-         // DeSelect Video Tool Button
+         // Select/DeSelect Video Tool Button
          _videoToolButton.setSelected(false);
          _videoPlayerButton.setSelected(true);
+         _mp4ConverterButton.setSelected(false);
 
          // Enable Menu Items
          if(!_currentVideoPlayerFile.getName().equals(""))
@@ -472,6 +479,30 @@ public class HomePageController extends AbstractController
          _deleteLinkMenuItem.setDisable(true);
          _saveMenuItem.setDisable(true);
          _saveAsMenuItem.setDisable(true);
+      });
+   }
+
+   /**
+    * handleMP4ConverterButtonSelection - Handles the Selection of
+    *                                     the MP4 Converter Toggle Button
+    */
+   private void handleMP4ConverterButtonSelection()
+   {
+      _mp4ConverterButton.setOnAction(event ->
+      {
+         // Updated Selected Tab
+         _selectedTab = EHypermediaTab.VIDEO_PLAYER;
+
+         // Clear Content Pane
+         _contentPane.getChildren().clear();
+
+         // Add Video Tool to Content Pane
+         _contentPane.getChildren().add(_mp4ConverterController.getPane());
+
+         // Select/DeSelect Video Tool Button
+         _videoToolButton.setSelected(false);
+         _videoPlayerButton.setSelected(false);
+         _mp4ConverterButton.setSelected(true);
       });
    }
 
