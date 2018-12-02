@@ -1,10 +1,7 @@
 package controllers;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Map;
 import enums.EFontAwesome;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,56 +13,14 @@ import javafx.stage.Stage;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import data.Link;
-import data.Point;
-import dialogs.ErrorDialog;
-import dialogs.ImportVideoDialog;
-import dialogs.LinkCreationDialog;
-import dialogs.SaveDialog;
-import dialogs.interfaces.IDialog;
-import enums.EFontAwesome;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
-import javafx.css.PseudoClass;
-import javafx.event.EventHandler;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.stage.Stage;
 import javafx.util.Duration;
-import util.PolygonUtil;
-import java.util.List;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import java.io.FileWriter;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
-import java.io.IOException;
-import com.google.gson.JsonElement;
 
 /**
  * VideoPlayerController - Controls the User Interaction on the
@@ -150,6 +105,11 @@ public class VideoPlayerController extends AbstractController
       _stopButton.setText(EFontAwesome.STOP.getCode());
       _openVideoButton.setText(EFontAwesome.FILE_CODE.getCode());
 
+      // Initialize Button State
+      _playButton.setDisable(true);
+      _pauseButton.setDisable(true);
+      _stopButton.setDisable(true);
+
       // Button Listeners
       handlePlayButton();
       handlePauseButton();
@@ -177,8 +137,11 @@ public class VideoPlayerController extends AbstractController
       // Process Click of Play Button
       _playButton.setOnAction(event ->
       {
-         // TODO: Remove Debug Stmt
+         // Play The Video
          _mediaPlayer.play();
+
+         // Disable the Play Button
+         _playButton.setDisable(true);
       });
    }
 
@@ -190,8 +153,11 @@ public class VideoPlayerController extends AbstractController
       // Process Click of Pause Button
       _pauseButton.setOnAction(event ->
       {
-         // TODO: Remove Debug Stmt
+         // Pause The Video
          _mediaPlayer.pause();
+         
+         // Enable the Play Button
+         _playButton.setDisable(false);
       });
    }
 
@@ -205,6 +171,9 @@ public class VideoPlayerController extends AbstractController
       {
          // TODO: Remove Debug Stmt
          System.out.println("Stop Button Selection");
+
+         // Enable the Play Button
+         _playButton.setDisable(false);
       });
    }
 
@@ -232,8 +201,6 @@ public class VideoPlayerController extends AbstractController
       _linkData.clear();
       _linkData.setAll(linkData);
 
-
-
       // Get First Link in Hyperlink File
       final Link link = _linkData.get(0);
 
@@ -242,7 +209,6 @@ public class VideoPlayerController extends AbstractController
 
       // Update Links
       displayLinks(_currentFrame);
-
    }
 
    /**
@@ -256,6 +222,11 @@ public class VideoPlayerController extends AbstractController
       // Update the Primary Video
       _video = primaryVideo;
       _videoView.setVisible(true);
+
+      // Update Button States
+      _playButton.setDisable(false);
+      _pauseButton.setDisable(false);
+      _stopButton.setDisable(false);
 
       try 
       {
@@ -328,25 +299,26 @@ public class VideoPlayerController extends AbstractController
    private void handleProgress()
    {
       // Slider Change Listener
-      if(_mediaPlayer != null) {
+      if(_mediaPlayer != null) 
+      {
          _mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>()
          {
             @Override
             public void changed(ObservableValue<? extends Duration> ov, Duration oldTime, Duration newTime) {
 
-               // Null Check Primary Video
-               if(_video != null)
+               // Null Check Primary Video and video is playing
+               if(_video != null && (_playButton.isDisable()))
                {
-
                   // Update Current Primary Frame
-                  _currentFrame = (int) ((newTime.toMillis()/1000) * 30) + 1;
+                  double frameTime = (newTime.toSeconds()/FPS) * 1000;
+                  _currentFrame = (int) Math.round(frameTime);
 
-                  System.out.println(_currentFrame);
+                  // Update the Slider
+                  _videoSlider.setValue(frameTime);
 
                   // Update the Progress Bar
                   final double maxVal = _videoSlider.getMax();
-                  _videoProgressBar.setProgress((double) _currentFrame/maxVal);
-
+                  _videoProgressBar.setProgress(frameTime/maxVal);
 
                   // Display Links associated with Current Frame
                   displayLinks(_currentFrame);
@@ -366,15 +338,18 @@ public class VideoPlayerController extends AbstractController
       {
          public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
-            // Null Check Primary Video
-            if(_video != null)
+            // Null Check Primary Video and ensure Video is not playing
+            if(_video != null && !_playButton.isDisable())
             {
-
                // Update Current Primary Frame
                _currentFrame = newVal.intValue();
 
-               // Get the Current Frame Time (ms)
+               // Get the Current Frame Time (Seconds)
                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
+
+               // TODO: Remove Debug Statement
+               System.out.println("Frame Time: " + frameTime);
+               System.out.println("Frame: " + _currentFrame);
 
                // Update the Progress Bar
                final double maxVal = _videoSlider.getMax();
@@ -433,5 +408,4 @@ public class VideoPlayerController extends AbstractController
          }
       }
    }
-
 }
