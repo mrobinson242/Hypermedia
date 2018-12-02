@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -49,9 +50,6 @@ public class HomePageController extends AbstractController
 
    @FXML
    private MenuItem _saveMenuItem;
-
-   @FXML
-   private MenuItem _saveAsMenuItem;
 
    @FXML
    private MenuItem _createLinkMenuItem;
@@ -188,7 +186,6 @@ public class HomePageController extends AbstractController
       handleNewFileSelection();
       handleOpenFileSelection();
       handleSaveSelection();
-      handleSaveAsSelection();
       handleExitSelection();
 
       // Set File Menu Accelerators
@@ -271,6 +268,9 @@ public class HomePageController extends AbstractController
       {
          // Update Video Tool with Selected File
          _videoToolController.setPrimaryVideo(primaryVideo, MIN_FRAME);
+
+         // Check if the File already Exists
+         _videoToolController.findHyperlinkFile();
       }
    }
 
@@ -322,47 +322,42 @@ public class HomePageController extends AbstractController
    }
 
    /**
-    * saveHyperlinkFile - Processes the Save/Save As Functionality
+    * openHyperlinkFile - Processes the Open File Functionality
     */
-   public void saveHyperlinkFile(final boolean isSaveAs)
+   public void openHyperlinkFile(final File hyperlinkFile)
    {
-      // Check if Save As Function
-      if(isSaveAs)
+      // Null Check Hyperlink File
+      if(hyperlinkFile != null)
       {
-         // Open up Save File Dialog
-         File saveFile = _saveFileChooser.showSaveDialog(_stage);
+         // Upload Data from File
+         final ArrayList<Link> linkData = uploadDataFromFile(hyperlinkFile);
 
-         // Null Check Save File
-         if(saveFile != null)
+         // Check if Video Tool Tab Selected
+         if(EHypermediaTab.VIDEO_TOOL.equals(_selectedTab))
          {
-            // Write out Hyperlink Information to File
-            _videoToolController.saveDataToFile(saveFile);
-         }
-      }
-      // Else Handle Save Functionality
-      else
-      {
-         // Get Hyperlink Video File
-         File hyperlinkFile = _videoToolController.getHyperlinkFile();
-
-         // Check if valid Hyperlink File
-         if(hyperlinkFile.getName() != "")
-         {
-            // Write out Hyperlink Information to File
-            _videoToolController.saveDataToFile(hyperlinkFile);
+            // Open up the Hyperlink File in the Video Tool
+             _videoToolController.openHyperlinkFile(hyperlinkFile, linkData);
          }
          else
          {
-            // Open up Save File Dialog
-            File saveFile = _saveFileChooser.showSaveDialog(_stage);
-
-            // Null Check Save File
-            if(saveFile != null)
-            {
-               // Write out Hyperlink Information to File
-               _videoToolController.saveDataToFile(saveFile);
-            }
+            _videoPlayerController.loadVideo(linkData);
          }
+      }
+   }
+
+   /**
+    * saveHyperlinkFile - Processes the Save/Save As Functionality
+    */
+   public void saveHyperlinkFile()
+   {
+      // Get Hyperlink Video File
+      File hyperlinkFile = _videoToolController.getHyperlinkFile();
+
+      // Null Check Hyperlink File
+      if(hyperlinkFile != null)
+      {
+         // Write out Hyperlink Information to File
+         _videoToolController.saveDataToFile(hyperlinkFile);
       }
    }
 
@@ -433,7 +428,6 @@ public class HomePageController extends AbstractController
          setCreateLinkState(_createLinkAvailable);
          setDeleteLinkState(_deleteLinkAvailable);
          _saveMenuItem.setDisable(false);
-         _saveAsMenuItem.setDisable(false);
 
          // Disable Menu Items
          _playVideoMenuItem.setDisable(true);
@@ -478,7 +472,6 @@ public class HomePageController extends AbstractController
          _createLinkMenuItem.setDisable(true);
          _deleteLinkMenuItem.setDisable(true);
          _saveMenuItem.setDisable(true);
-         _saveAsMenuItem.setDisable(true);
       });
    }
 
@@ -571,21 +564,7 @@ public class HomePageController extends AbstractController
       _saveMenuItem.setOnAction(event ->
       {
          // Save the Hyperlink File
-         saveHyperlinkFile(false);
-      });
-   }
-
-   /**
-    * handleSaveAsSelection - Handles the Selection of the 
-    *                         Save As Menu Item
-    */
-   private void handleSaveAsSelection()
-   {
-      // Process Selection of the Save As Menu Item
-      _saveAsMenuItem.setOnAction(event ->
-      {
-         // Save the Hyperlink File
-         saveHyperlinkFile(true);
+         saveHyperlinkFile();
       });
    }
 

@@ -17,7 +17,6 @@
                   <MenuItem fx:id="_importPrimaryVideoItem" mnemonicParsing="false" text="Import Primary Video" />
                   <MenuItem fx:id="_importSecondaryVideoItem" mnemonicParsing="false" text="Import Secondary Video" />
                   <MenuItem fx:id="_saveMenuItem" mnemonicParsing="false" text="Save" />
-                  <MenuItem fx:id="_saveAsMenuItem" mnemonicParsing="false" text="Save As" />
                   <MenuItem fx:id="_exitMenuItem" mnemonicParsing="false" text="Exit" />
                </items>
             </Menu>

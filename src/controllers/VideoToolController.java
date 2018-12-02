@@ -44,6 +44,7 @@ import javafx.util.Duration;
 import util.PolygonUtil;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -89,9 +90,6 @@ public class VideoToolController extends AbstractController
 
    @FXML
    private Button _importVideoButton;
-
-   @FXML
-   private Button _newFileButton;
 
    @FXML
    private Button _saveButton;
@@ -186,6 +184,9 @@ public class VideoToolController extends AbstractController
    /** PseudoClass for Highlighting a Link in the Table */
    private final PseudoClass _highlightClass;
 
+   /** Path to Hyperlink Files on a System's Computer */
+   private File _hyperlinkFilePath;
+
    /**
     * Constructor
     *
@@ -224,7 +225,6 @@ public class VideoToolController extends AbstractController
       // Update Icons of Buttons
       _importFileButton.setText(EFontAwesome.FILE_CODE.getCode());
       _importVideoButton.setText(EFontAwesome.FILE_VIDEO.getCode());
-      _newFileButton.setText(EFontAwesome.NEW_FILE.getCode());
       _createLinkButton.setText(EFontAwesome.LINK.getCode());
       _saveButton.setText(EFontAwesome.SAVE.getCode());
       _deleteLinkButton.setText(EFontAwesome.TRASH.getCode());
@@ -234,19 +234,19 @@ public class VideoToolController extends AbstractController
       Tooltip saveToolTip = new Tooltip("Save Button");
       Tooltip createLinkToolTip = new Tooltip("Create Link Button");
       Tooltip deleteLinkToolTip = new Tooltip("Delete Link Button");
-      Tooltip newFileTooltip = new Tooltip("New Hyperlink File Button");
       Tooltip importFileTooltip = new Tooltip("Import Hyperlink File Button");
+
+      // Initialize the Hyperlink File Path
+      _hyperlinkFilePath = new File(System.getProperty("user.home"), "Desktop/Hypermedia");
 
       // Set ToolTips for Buttons
       _importFileButton.setTooltip(importFileTooltip);
       _importVideoButton.setTooltip(importVideoTooltip);
       _saveButton.setTooltip(saveToolTip);
-      _newFileButton.setTooltip(newFileTooltip);
       _createLinkButton.setTooltip(createLinkToolTip);
       _deleteLinkButton.setTooltip(deleteLinkToolTip);
 
       // Initialize Button States
-      _newFileButton.setDisable(true);
       _deleteLinkButton.setDisable(true);
       _createLinkButton.setDisable(true);
 
@@ -265,7 +265,6 @@ public class VideoToolController extends AbstractController
       // Button Listeners
       handleImportFileButton();
       handleImportVideoButton();
-      handleNewFileButton();
       handleCreateLinkButton();
       handleDeleteLinkButton();
       handleSaveButton();
@@ -275,7 +274,6 @@ public class VideoToolController extends AbstractController
       handleSecondarySlider();
 
       // Initialize List of Link Data */
-      //_linkData = FXCollections.observableArrayList(new Link("1", 1, 1, 1), new Link("2", 1, 1, 1), new Link("3", 1, 1, 1) ,new Link("4", 1, 1, 1) ,new Link("5", 1, 1, 1) ,new Link("6", 1, 1, 1) ,new Link("7", 1, 1, 1), new Link("8", 1, 1, 1));
       _linkData = FXCollections.observableArrayList();
 
       // Initialize Data of Link Table View
@@ -357,6 +355,46 @@ public class VideoToolController extends AbstractController
       {
          // Log Error
          e.printStackTrace();
+      }
+   }
+
+   /**
+    * findHyperlinkFile - Looks for the Hyperlink File associated
+    *                     with the primary video
+    *
+    * @param filename - The Filename
+    */
+   public void findHyperlinkFile()
+   {
+      // Get Hyperlink File
+      String videoName = FilenameUtils.getBaseName(_primaryVideo.getName());
+ 
+      // Initialize File Path
+      String filePath = _hyperlinkFilePath + "/" + videoName + ".json";
+
+      // Create new Hyperlink File
+      final File hyperlinkFile = new File(filePath);
+
+      // Update Filename Label
+      _hyperlinkFilename.setVisible(true);
+      _hyperlinkFilename.setText(videoName);
+
+      // Update the Current Hyperlink File
+      _currentHyperlinkFile = hyperlinkFile;
+
+      // Clear Current Data
+      _linkData.clear();
+
+      // Check if Hyperlink File Exists
+      if(hyperlinkFile.exists())
+      {
+         // Open up the existing Hyperlink File
+         _homePageController.openHyperlinkFile(hyperlinkFile);
+      }
+      else
+      {
+         // Clear Secondary Video View
+         _secondaryVideoView.setVisible(false);
       }
    }
 
@@ -496,31 +534,23 @@ public class VideoToolController extends AbstractController
     */
    public void openHyperlinkFile(File file, ArrayList<Link> linkData)
    {
-       // Check if current file matches Hyperlink File
-       if(!_hyperlinkFilename.equals(file.getName()))
-       {
-          // Update with Latest Data
-          _linkData.clear();
-          _linkData.setAll(linkData);
+       // Update with Latest Data
+       _linkData.clear();
+       _linkData.setAll(linkData);
 
-          // Update Filename Label
-          _hyperlinkFilename.setVisible(true);
-          _hyperlinkFilename.setText(file.getName());
+       // Update Filename Label
+       _hyperlinkFilename.setVisible(true);
+       _hyperlinkFilename.setText(file.getName());
 
-          // Get First Link in Hyperlink File
-          final Link link = _linkData.get(0);
+       // Get First Link in Hyperlink File
+       final Link link = _linkData.get(0);
 
-          // Update Videos
-          setPrimaryVideo(link.getFromVideo(), link.getStartFrame());
-          setSecondaryVideo(link.getToVideo(), link.getToFrame());
+       // Update Videos
+       setPrimaryVideo(link.getFromVideo(), link.getStartFrame());
+       setSecondaryVideo(link.getToVideo(), link.getToFrame());
 
-          // Update Links
-          displayLinks(_currentPrimaryFrame);
-       }
-       else
-       {
-          // TODO: Handle Case where same file is open in Video Player
-       }
+       // Update Links
+       displayLinks(_currentPrimaryFrame);
    }
 
    /**
@@ -532,18 +562,7 @@ public class VideoToolController extends AbstractController
    public void saveDataToFile(final File file)
    {
       // Write Data to Hyperlink File
-      writeDataToFile(file);
-
-      // Check if current file matches Hyperlink File
-      if(!_hyperlinkFilename.equals(file.getName()))
-      {
-         // Update Filename Label
-         _hyperlinkFilename.setVisible(true);
-         _hyperlinkFilename.setText(file.getName());
-      }
-
-      // Enable New File Button
-      _newFileButton.setDisable(false);
+      writeDataToFile();
    }
 
    /**
@@ -653,20 +672,6 @@ public class VideoToolController extends AbstractController
    }
 
    /**
-    * handleNewFileButton - Handles the Selection of the
-    *                       New File Button
-    */
-   private void handleNewFileButton()
-   {
-      // Process Selection of the New File Button
-      _newFileButton.setOnAction(event ->
-      {
-         // Show the Save File Dialog
-         _saveDialog.showDialog();
-      });
-   }
-
-   /**
     * handleImportFileButton - Handles the Selection of the
     *                          Import File Button
     */
@@ -704,7 +709,7 @@ public class VideoToolController extends AbstractController
       _saveButton.setOnAction(event ->
       {
          // Save Hyperlink File as a New File
-         _homePageController.saveHyperlinkFile(true);
+         _homePageController.saveHyperlinkFile();
       });
    }
 
@@ -985,7 +990,7 @@ public class VideoToolController extends AbstractController
     * 
     * @param file - File to write data to
     */
-   private void writeDataToFile(final File file)
+   private void writeDataToFile()
    {
       JSONObject links = new JSONObject();
       // Iterate through all the links.
@@ -1026,10 +1031,10 @@ public class VideoToolController extends AbstractController
       try 
       {
          // Create new File
-         file.createNewFile();
+         _currentHyperlinkFile.createNewFile();
 
          // Initialize File Writer
-         FileWriter f = new FileWriter(file);
+         FileWriter f = new FileWriter(_currentHyperlinkFile);
 
          // Create new Gson Object
          Gson gson = new GsonBuilder().setPrettyPrinting().create();
