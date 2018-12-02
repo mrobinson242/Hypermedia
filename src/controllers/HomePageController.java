@@ -311,7 +311,7 @@ public class HomePageController extends AbstractController
          }
          else
          {
-            _videoPlayerController.loadVideo(hyperlinkFile, linkData);
+            _videoPlayerController.loadVideo(linkData);
          }
       }
    }
