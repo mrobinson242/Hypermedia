@@ -122,12 +122,7 @@ public class VideoPlayerController extends AbstractController
       // Initialize Slider States
       _videoSlider.setDisable(true);
       _videoProgressBar.setDisable(true);
-
-      // Initialize the Hyperlink File Selector
-      
    }
-
-
 
    /**
     * handlePlayButton - Listener for the Play Button Selection
@@ -313,12 +308,16 @@ public class VideoPlayerController extends AbstractController
                   double frameTime = (newTime.toSeconds()/FPS) * 1000;
                   _currentFrame = (int) Math.round(frameTime);
 
-                  // Update the Slider
-                  _videoSlider.setValue(frameTime);
+                  // Only Update if Video Slider is not being Pressed
+                  if(!_videoSlider.isPressed())
+                  {
+                     // Update the Slider
+                     _videoSlider.setValue(frameTime);
 
-                  // Update the Progress Bar
-                  final double maxVal = _videoSlider.getMax();
-                  _videoProgressBar.setProgress(frameTime/maxVal);
+                     // Update the Progress Bar
+                     final double maxVal = _videoSlider.getMax();
+                     _videoProgressBar.setProgress(frameTime/maxVal);
+                  }
 
                   // Display Links associated with Current Frame
                   displayLinks(_currentFrame);
@@ -339,7 +338,7 @@ public class VideoPlayerController extends AbstractController
          public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
             // Null Check Primary Video and ensure Video is not playing
-            if(_video != null && !_playButton.isDisable())
+            if(_video != null && _videoSlider.isPressed())
             {
                // Update Current Primary Frame
                _currentFrame = newVal.intValue();
@@ -347,12 +346,10 @@ public class VideoPlayerController extends AbstractController
                // Get the Current Frame Time (Seconds)
                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
 
-               // TODO: Remove Debug Statement
-               System.out.println("Frame Time: " + frameTime);
-               System.out.println("Frame: " + _currentFrame);
-
                // Update the Progress Bar
                final double maxVal = _videoSlider.getMax();
+
+               // Update Progress of Slider
                _videoProgressBar.setProgress(newVal.doubleValue()/maxVal);
 
                // Update the Primary Video Media Player
@@ -361,6 +358,22 @@ public class VideoPlayerController extends AbstractController
                // Display Links associated with Current Frame
                displayLinks(_currentFrame);
             }
+         }
+      });
+
+      // Mouse Pressed Listener
+      _videoSlider.setOnMousePressed(event ->
+      {
+         _mediaPlayer.pause();
+      });
+
+      // Mouse Release Listener
+      _videoSlider.setOnMouseReleased(event ->
+      {
+         // Check if in Play Mode
+         if(_playButton.isDisable())
+         {
+            _mediaPlayer.play();
          }
       });
    }
