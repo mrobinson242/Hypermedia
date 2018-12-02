@@ -127,6 +127,7 @@ public class MP4ConverterController extends AbstractController
       String folderPath = path.toString();
 
       double imageCount = 1.0;
+      String soundFile = folderPath + "/" + rgbFolder.getName() + ".wav";
 
       // Iterate over Image Size
       for (int i = 1; i <= FRAMES; i++)
@@ -137,6 +138,7 @@ public class MP4ConverterController extends AbstractController
 
          // Get RGB File Name String
          String fileName = folderPath + "/" + rgbFolder.getName() + String.format("%04d", i) + ".rgb";
+
 
          // Create RGB File Object
          File file = new File(fileName);
@@ -214,11 +216,17 @@ public class MP4ConverterController extends AbstractController
       }
 
       // Initialize MPG4 Creation Commands
+      String cmd0 = "cp " + soundFile + " .";
       String cmd = "ffmpeg -framerate 30 -i " + folderName + "%04d.jpg out" + folderName + ".mp4";
       String cmd2 = "ffmpeg -i out" + folderName + ".mp4 -i " + folderName + ".wav -vcodec copy " + folderName + ".mp4";
 
       try 
       {
+         Process p0 = Runtime.getRuntime().exec(cmd0);
+
+         p0.waitFor();
+
+
          Process p = Runtime.getRuntime().exec(cmd);
 
          p.waitFor();
