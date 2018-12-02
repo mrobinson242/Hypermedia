@@ -541,15 +541,19 @@ public class VideoToolController extends AbstractController
        _hyperlinkFilename.setVisible(true);
        _hyperlinkFilename.setText(file.getName());
 
-       // Get First Link in Hyperlink File
-       final Link link = _linkData.get(0);
+       // Check to see if Link Data is Empty
+       if(!linkData.isEmpty())
+       {
+          // Get First Link in Hyperlink File
+          final Link link = _linkData.get(0);
 
-       // Update Videos
-       setPrimaryVideo(link.getFromVideo(), link.getStartFrame());
-       setSecondaryVideo(link.getToVideo(), link.getToFrame());
+          // Update Videos
+          setPrimaryVideo(link.getFromVideo(), link.getStartFrame());
+          setSecondaryVideo(link.getToVideo(), link.getToFrame());
 
-       // Update Links
-       displayLinks(_currentPrimaryFrame);
+          // Update Links
+          displayLinks(_currentPrimaryFrame);
+       }
    }
 
    /**
