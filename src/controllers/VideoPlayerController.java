@@ -12,6 +12,10 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 
 /**
  * VideoPlayerController - Controls the User Interaction on the
@@ -46,7 +50,10 @@ public class VideoPlayerController extends AbstractController
    /** Stage of the Application Window */
    private final Stage _primaryStage;
 
-   
+   /** Home Page Controller */
+   private HomePageController _homePageController;
+
+   private ObservableList<Link> _linkData;
 
    /**
     * Constructor
@@ -61,6 +68,8 @@ public class VideoPlayerController extends AbstractController
 
       // Initialize the Stage of the Primary Window
       _primaryStage = primaryStage;
+
+      _homePageController = homePageController;
 
       // Update Icons of Buttons
       _playButton.setText(EFontAwesome.PLAY.getCode());
@@ -159,19 +168,17 @@ public class VideoPlayerController extends AbstractController
       _openVideoButton.setOnAction(event ->
       {
          // Get the Hyperlink Video File from the File Chooser
-         final File hyperlinkVideo = _hyperlinkFileChooser.showOpenDialog(_primaryStage);
+         _homePageController.openHyperlinkFile();
 
-         // Load the Video into the Video Player
-         loadVideo();
       });
    }
 
    /**
     * loadVideo
     */
-   private void loadVideo()
+   public void loadVideo(File file, ArrayList<Link> linkData)
    {
-      
+       
    }
 
    /**
