@@ -310,7 +310,6 @@ public class VideoToolController extends AbstractController
       // Update the Primary Video
       _primaryVideo = primaryVideo;
       _primaryVideoView.setVisible(true);
-      _currentHyperlinkFile = new File("");
 
       try 
       {
@@ -1030,6 +1029,9 @@ public class VideoToolController extends AbstractController
       }
       try 
       {
+         // TODO: Remove Debug Statement
+         System.out.println("Current Hyperlink File: " + _currentHyperlinkFile.getName());
+
          // Create new File
          _currentHyperlinkFile.createNewFile();
 
