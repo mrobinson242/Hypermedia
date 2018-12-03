@@ -71,7 +71,7 @@ public class MP4ConverterController extends AbstractController
       handleSelectFolderButton();
 
       // Initialize the Desktop Path
-      _desktopPath = new File(System.getProperty("user.home"), "Desktop/");
+      _desktopPath = new File(System.getProperty("user.home"), "Desktop/videos");
 
       // Initialize Select Folder Chooser
       _selectFolderChooser = new DirectoryChooser();
@@ -215,11 +215,15 @@ public class MP4ConverterController extends AbstractController
          }
       }
 
+
       // Initialize MPG4 Creation Commands
       String cmd0 = "cp " + soundFile + " .";
       String cmd = "ffmpeg -framerate 30 -i " + folderName + "%04d.jpg out" + folderName + ".mp4";
       String cmd2 = "ffmpeg -i out" + folderName + ".mp4 -i " + folderName + ".wav -vcodec copy " + folderName + ".mp4";
-
+      String cmd3 = "mv " + folderName + ".mp4 " + _desktopPath.getAbsolutePath();
+      String[] cmd4 = new String[] {"/bin/sh", "-c", "rm -rf ./*.jpg"};
+      String cmd5 = "rm " + folderName + ".wav";
+      String cmd6 = "rm out" + folderName + ".mp4";
       try 
       {
          Process p0 = Runtime.getRuntime().exec(cmd0);
@@ -231,9 +235,29 @@ public class MP4ConverterController extends AbstractController
 
          p.waitFor();
 
-         Runtime.getRuntime().exec(cmd2);
+         Process p2 = Runtime.getRuntime().exec(cmd2);
+
+         p2.waitFor();
+
+         Process p3 = Runtime.getRuntime().exec(cmd3);
+
+         p3.waitFor();
+
+         Process p4 = Runtime.getRuntime().exec(cmd4);
+
+         p4.waitFor();
+
+         Process p5 = Runtime.getRuntime().exec(cmd5);
+
+         p5.waitFor();
+
+         Process p6 = Runtime.getRuntime().exec(cmd6);
+
+         p6.waitFor();
 
          System.out.println("Done");
+
+
       } 
       catch (IOException e) 
       {

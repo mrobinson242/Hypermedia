@@ -21,6 +21,22 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.util.Duration;
+import util.PolygonUtil;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
+import data.Point;
+import java.util.List;
+
+import org.apache.commons.io.FilenameUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.util.Iterator;
+import java.util.HashMap;
+import java.io.FileReader;
 
 /**
  * VideoPlayerController - Controls the User Interaction on the
@@ -73,6 +89,7 @@ public class VideoPlayerController extends AbstractController
    /** Home Page Controller */
    private HomePageController _homePageController;
 
+   /** Observable List of Link Data */
    private ObservableList<Link> _linkData;
 
    /** Primary Video File */
@@ -80,6 +97,12 @@ public class VideoPlayerController extends AbstractController
 
    /** Primary Video Media Player */
    private MediaPlayer _mediaPlayer;
+
+   /** Polygon Math Utility Helper */
+   private PolygonUtil _polygonUtil;
+
+   /** Path to Hyperlink Files on a System's Computer */
+   private File _hyperlinkFilePath;
 
    /**
     * Constructor
@@ -110,6 +133,11 @@ public class VideoPlayerController extends AbstractController
       _pauseButton.setDisable(true);
       _stopButton.setDisable(true);
 
+      // Initialize Polygon Utility Helper();
+      _polygonUtil = new PolygonUtil();
+
+      _hyperlinkFilePath = new File(System.getProperty("user.home"), "Desktop/Hypermedia");
+
       // Button Listeners
       handlePlayButton();
       handlePauseButton();
@@ -122,6 +150,8 @@ public class VideoPlayerController extends AbstractController
       // Initialize Slider States
       _videoSlider.setDisable(true);
       _videoProgressBar.setDisable(true);
+      handleHyperlinkSelection();
+
    }
 
    /**
@@ -165,7 +195,8 @@ public class VideoPlayerController extends AbstractController
       _stopButton.setOnAction(event ->
       {
          // TODO: Remove Debug Stmt
-         System.out.println("Stop Button Selection");
+         _mediaPlayer.pause();
+         _mediaPlayer.seek(new Duration(0));
 
          // Enable the Play Button
          _playButton.setDisable(false);
@@ -338,7 +369,7 @@ public class VideoPlayerController extends AbstractController
          public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
             // Null Check Primary Video and ensure Video is not playing
-            if(_video != null && _videoSlider.isPressed())
+            if(_video != null && !_playButton.isDisable())
             {
                // Update Current Primary Frame
                _currentFrame = newVal.intValue();
@@ -420,5 +451,153 @@ public class VideoPlayerController extends AbstractController
             }
          }
       }
+   }
+
+   /**
+    * handleHyperlinkSelection
+    */
+   private void handleHyperlinkSelection()
+   {
+      // Mouse Press Listener
+      _videoPane.setOnMousePressed(new EventHandler<MouseEvent>()
+      {
+         @Override public void handle(final MouseEvent mouseEvent)
+         {
+            // Get Mouse Event
+            Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
+
+            int index = 0;
+
+            // Indicate which link is being clicked if any
+            int isLink = -1;
+
+            // Iterate over the Current Links
+            for(Link link : _linkData)
+            {
+               // Initialize Boolean Indicator
+               boolean isInsidePolygon;
+
+               // Get List of Vertices
+               final List<Point> vertices = link.getVertices(_currentFrame);
+               
+               // Ensure that there are Vertices
+               if(!vertices.isEmpty())
+               {
+                  // Check if Mouse Press is inside Polygon
+                  isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices(_currentFrame));
+               }
+               else
+               {
+                  // Default to not inside polygon
+                  isInsidePolygon = false;
+               }
+
+               if(isInsidePolygon) {
+                  isLink = index;
+               }
+
+               index += 1;
+            }
+
+            // Based on a link that was clicked, import in the video that the link points to and corresponding hyperlink file
+            if (isLink >= 0) {
+               Link clickedLink = _linkData.get(isLink);
+
+               _video = clickedLink.getToVideo();
+
+               String videoName = FilenameUtils.getBaseName(_video.getName());
+
+               String filePath = _hyperlinkFilePath + "/" + videoName + ".json";
+
+               // Create new Hyperlink File
+               final File hyperlinkFile = new File(filePath);
+               _linkData.clear();
+
+               // update _linkdata structure
+               if(hyperlinkFile.exists())
+               {
+                  _linkData.setAll(uploadDataFromFile(hyperlinkFile));
+               }
+
+               setVideo(clickedLink.getToVideo(), clickedLink.getToFrame());
+
+
+
+            }
+         }
+      });
+   }
+
+   /**
+    * uploadDataFromFile - Reads in Data from Hyperlink File
+    */
+   private ArrayList<Link> uploadDataFromFile(final File file)
+   {
+      // Initialize List of links
+      ArrayList<Link> linkData = new ArrayList<Link>();
+
+      // Initialize JSON Parser
+      JSONParser parser = new JSONParser();
+
+      try 
+      {
+         Object obj = parser.parse(new FileReader(file));
+         JSONObject jsonObject = (JSONObject) obj;
+         Iterator<String> names = jsonObject.keySet().iterator();
+
+         // Iterate over all the Links
+         while(names.hasNext())
+         {
+            // Get all information about each link including toVideo, fromVideo, and frame numbers.
+            String name = names.next();
+            JSONObject linkInfo = (JSONObject) jsonObject.get(name);
+            String toVideo = (String) linkInfo.get("toVideo");
+            String fromVideo = (String) linkInfo.get("fromVideo");
+            int startFrame = ((Long) linkInfo.get("startFrame")).intValue();
+            int endFrame = ((Long) linkInfo.get("endFrame")).intValue();
+            int toFrame = ((Long) linkInfo.get("toFrame")).intValue();
+
+            // Get info about the bouding box coordinates for each frame in the link.
+            JSONObject frameInfo = (JSONObject) linkInfo.get("boxInfo");
+            Iterator<String> frames = frameInfo.keySet().iterator();
+            HashMap<Integer, ArrayList<Double>> framePoints = new HashMap<Integer, ArrayList<Double>>();
+            while (frames.hasNext())
+            {
+               String frame = (String) frames.next();
+               JSONArray pointInfo = (JSONArray) frameInfo.get(frame);
+               
+               Iterator points = pointInfo.iterator();
+               ArrayList<Double> pList = new ArrayList<Double>();
+
+               // Iterate over the Points
+               while (points.hasNext())
+               {
+                  pList.add((Double) points.next());
+               }
+
+               framePoints.put(Integer.parseInt(frame), pList);
+            }
+            // Reconstruct links given the information retrieved from the file and add them to the list data structure.
+            Link now = new Link(name, startFrame, endFrame, startFrame, fromVideo, toVideo, toFrame, framePoints);
+            linkData.add(now);
+         }
+      } 
+      catch (FileNotFoundException e)
+      {
+         // Log Error
+         e.printStackTrace();
+      }
+      catch (IOException e)
+      {
+         // Log Error
+         e.printStackTrace();
+      }
+      catch (ParseException e)
+      {
+         // Log Error
+         e.printStackTrace();
+      }
+      // Return a list of all the links that hve been constructed.
+      return linkData;
    }
 }
