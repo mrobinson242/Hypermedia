@@ -144,7 +144,7 @@ public class VideoPlayerController extends AbstractController
       handleStopButton();
       handleOpenVideoButton();
       handleSlider();
-
+      handleProgress();
       _linkData = FXCollections.observableArrayList();
 
       // Initialize Slider States
@@ -194,9 +194,15 @@ public class VideoPlayerController extends AbstractController
       // Process Click of Stop Button
       _stopButton.setOnAction(event ->
       {
-         // TODO: Remove Debug Stmt
+         // Stop Media Player
          _mediaPlayer.pause();
-         _mediaPlayer.seek(new Duration(0));
+
+         // Reset to Start of Video
+         _mediaPlayer.seek(new Duration(0.0));
+
+         // Update Slider/Progress to Start of Video
+         _videoSlider.setValue(0.0);
+         _videoProgressBar.setProgress(0.0);
 
          // Enable the Play Button
          _playButton.setDisable(false);
@@ -213,7 +219,6 @@ public class VideoPlayerController extends AbstractController
       {
          // Get the Hyperlink Video File from the File Chooser
          _homePageController.openHyperlinkFile();
-
       });
    }
 
@@ -222,19 +227,24 @@ public class VideoPlayerController extends AbstractController
     */
    public void loadVideo(ArrayList<Link> linkData)
    {
-       
       // Update with Latest Data
       _linkData.clear();
-      _linkData.setAll(linkData);
+      
+      // Check that there is Link Data
+      if(!linkData.isEmpty())
+      {
+         _linkData.setAll(linkData);
 
-      // Get First Link in Hyperlink File
-      final Link link = _linkData.get(0);
+         // Get First Link in Hyperlink File
+         final Link link = _linkData.get(0);
 
-      // Update Videos
-      setVideo(link.getFromVideo(), 1);
+         // Update Videos
+         setVideo(link.getFromVideo(), 1);
 
-      // Update Links
-      displayLinks(_currentFrame);
+         // Update Links
+         displayLinks(_currentFrame);
+
+      }
    }
 
    /**
@@ -253,6 +263,10 @@ public class VideoPlayerController extends AbstractController
       _playButton.setDisable(false);
       _pauseButton.setDisable(false);
       _stopButton.setDisable(false);
+
+      // TODO: Remove Debug Statements
+      System.out.println("Primary Video: " + primaryVideo);
+      System.out.println("Frame Number: " + frameNum);
 
       try 
       {
@@ -277,13 +291,22 @@ public class VideoPlayerController extends AbstractController
                // Update Current Primary Frame
                _currentFrame = frameNum;
 
+               // Get the Current Frame Time (Seconds)
+               final double frameTime = (frameNum/FPS) * 1000;
+
+               // Update the Progress Bar
+               final double maxVal = _videoSlider.getMax();
+               final double progress = frameNum/maxVal;
+               _videoProgressBar.setProgress(progress);
+
+               // Update the Primary Video Media Player
+               _mediaPlayer.seek(new Duration(frameTime));
+
                // Set Current Primary Slider Value
                _videoSlider.setValue(_currentFrame);
 
                // Update Displayed Links
                displayLinks(_currentFrame);
-
-               handleProgress();
             }
          });
       }
@@ -316,7 +339,6 @@ public class VideoPlayerController extends AbstractController
       _videoSlider.setBlockIncrement(1.0);
       _videoSlider.setMajorTickUnit(1.0);
       _videoSlider.setSnapToTicks(true);
-
    }
 
    /**
@@ -327,13 +349,14 @@ public class VideoPlayerController extends AbstractController
       // Slider Change Listener
       if(_mediaPlayer != null) 
       {
+         // Media Player Time Listener
          _mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>()
          {
             @Override
-            public void changed(ObservableValue<? extends Duration> ov, Duration oldTime, Duration newTime) {
-
+            public void changed(ObservableValue<? extends Duration> ov, Duration oldTime, Duration newTime)
+            {
                // Null Check Primary Video and video is playing
-               if(_video != null && (_playButton.isDisable()))
+               if(_video != null)
                {
                   // Update Current Primary Frame
                   double frameTime = (newTime.toSeconds()/FPS) * 1000;
@@ -369,7 +392,7 @@ public class VideoPlayerController extends AbstractController
          public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
             // Null Check Primary Video and ensure Video is not playing
-            if(_video != null && !_playButton.isDisable())
+            if(_video != null && (_videoSlider.isPressed() || _playButton.isDisabled()))
             {
                // Update Current Primary Frame
                _currentFrame = newVal.intValue();
@@ -409,7 +432,7 @@ public class VideoPlayerController extends AbstractController
       });
    }
 
-      /**
+   /**
     * displayLinks - Displays all the Links associated
     *                with the current Frame
     *
@@ -492,7 +515,9 @@ public class VideoPlayerController extends AbstractController
                   isInsidePolygon = false;
                }
 
-               if(isInsidePolygon) {
+               // Check if Click is Inside Link's Polygon
+               if(isInsidePolygon)
+               {
                   isLink = index;
                }
 
@@ -500,29 +525,38 @@ public class VideoPlayerController extends AbstractController
             }
 
             // Based on a link that was clicked, import in the video that the link points to and corresponding hyperlink file
-            if (isLink >= 0) {
+            if (isLink >= 0) 
+            {
+               // Stop the Current Video
+               _mediaPlayer.pause();
+
+               // Get the Selected Link
                Link clickedLink = _linkData.get(isLink);
 
+               // Get the To Video from the Selected Link
                _video = clickedLink.getToVideo();
 
+               // Get the Video Name of the To Video
                String videoName = FilenameUtils.getBaseName(_video.getName());
 
+               // Format File Path to Video's Metadata File
                String filePath = _hyperlinkFilePath + "/" + videoName + ".json";
 
                // Create new Hyperlink File
                final File hyperlinkFile = new File(filePath);
+
+               // Clear Previous Link DAta
                _linkData.clear();
 
-               // update _linkdata structure
+               // Check if Hyperlink Metadata File Exists
                if(hyperlinkFile.exists())
                {
+                  // Get New Link Information
                   _linkData.setAll(uploadDataFromFile(hyperlinkFile));
                }
 
+               // Set the Video accordingly
                setVideo(clickedLink.getToVideo(), clickedLink.getToFrame());
-
-
-
             }
          }
       });

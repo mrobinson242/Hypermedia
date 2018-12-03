@@ -6,6 +6,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.ProcessBuilder.Redirect;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.imageio.ImageIO;
@@ -71,7 +75,7 @@ public class MP4ConverterController extends AbstractController
       handleSelectFolderButton();
 
       // Initialize the Desktop Path
-      _desktopPath = new File(System.getProperty("user.home"), "Desktop/videos");
+      _desktopPath = new File(System.getProperty("user.home"), "Desktop/");
 
       // Initialize Select Folder Chooser
       _selectFolderChooser = new DirectoryChooser();
@@ -94,18 +98,22 @@ public class MP4ConverterController extends AbstractController
          // Display the Select Folder Chooser Dialog
          final File rgbFolder = _selectFolderChooser.showDialog(_primaryStage);
 
-         // Initialize new Runnable
-         Runnable r = new Runnable()
+         // Null Check RGB Folder
+         if(rgbFolder != null)
          {
-            @Override
-            public void run() 
+            // Initialize new Runnable
+            Runnable r = new Runnable()
             {
-               convertFolder(rgbFolder);
-            }
-         };
+               @Override
+               public void run() 
+               {
+                  convertFolder(rgbFolder);
+               }
+            };
 
-         // Start Conversion in Separate Thread
-         new Thread(r).start();
+            // Start Conversion in Separate Thread
+            new Thread(r).start();
+         }
       });
    }
 
@@ -130,7 +138,7 @@ public class MP4ConverterController extends AbstractController
       String soundFile = folderPath + "/" + rgbFolder.getName() + ".wav";
 
       // Iterate over Image Size
-      for (int i = 1; i <= FRAMES; i++)
+      for (int i = 1; i <= 500; i++)
       {
          // Set the File Number
          _frameNum.set(imageCount);
@@ -203,7 +211,7 @@ public class MP4ConverterController extends AbstractController
          String s = file.getName();
          int position = s.lastIndexOf(".");
          s = s.substring(0, position);
-         File outputfile = new File(s + ".jpg");
+         File outputfile = new File(rgbFolder + "/" + s + ".jpg");
 
          try 
          {
@@ -215,49 +223,68 @@ public class MP4ConverterController extends AbstractController
          }
       }
 
+      // ffmpeg string
+      String ffmpeg = "C:\\Program Files\\ffmpeg\\bin\\ffmpeg";
+      String frameRate = " -framerate 30";
+      String folderPath2 = rgbFolder.getAbsolutePath() + "\\";
+      File file = new File(folderPath2);
+      String filePath = rgbFolder.getAbsolutePath() + "\\" + folderName + "%04d.jpg ";
+      String audioPath = rgbFolder.getAbsolutePath() + "\\" + folderName + ".wav";
+      String videoPath = rgbFolder.getAbsolutePath() + "\\" + folderName + ".mp4";
+
 
       // Initialize MPG4 Creation Commands
-      String cmd0 = "cp " + soundFile + " .";
-      String cmd = "ffmpeg -framerate 30 -i " + folderName + "%04d.jpg out" + folderName + ".mp4";
-      String cmd2 = "ffmpeg -i out" + folderName + ".mp4 -i " + folderName + ".wav -vcodec copy " + folderName + ".mp4";
-      String cmd3 = "mv " + folderName + ".mp4 " + _desktopPath.getAbsolutePath();
-      String[] cmd4 = new String[] {"/bin/sh", "-c", "rm -rf ./*.jpg"};
-      String cmd5 = "rm " + folderName + ".wav";
-      String cmd6 = "rm out" + folderName + ".mp4";
+      //String cmd0 = "copy " + audioPath + " .";
+      String cmd = ffmpeg + "-i " + folderName + "%04d.jpg " + folderName + ".mp4";
+      //String cmd2 = ffmpeg + " -i out" + videoPath +" -i " + audioPath + " -vcodec copy " + videoPath;
+      //String cmd = ffmpeg + " -framerate 30 -i " + folderName + "%04d.jpg " + folderName + ".mp4";
+      //String cmd2 = "ffmpeg -i out" + folderName + ".mp4 -i " + folderName + ".wav -vcodec copy " + folderName + ".mp4";
+      //String cmd3 = "mv " + folderName + ".mp4 " + _desktopPath.getAbsolutePath();
+      //String[] cmd4 = {"/bin/sh", "-c", "rm -rf ./*.jpg"};
+      //String cmd5 = "rm " + folderName + ".wav";
+      //String cmd6 = "rm out" + folderName + ".mp4";
+
+      List<String> params = Arrays.asList("C:\\Program Files\\ffmpeg\\bin\\ffmpeg", " -i ", folderName + "%04d.jpg ", folderName + ".mp4");
+      //String cmd1 = ffmpeg + " -framerate 30 -i " + folderName + "%04d.jpg " + folderName + ".mp4";
       try 
       {
-         Process p0 = Runtime.getRuntime().exec(cmd0);
+         //System.out.println("Step 0" );
+         //Process p0 = Runtime.getRuntime().exec(cmd0);
+         //p0.waitFor();
 
-         p0.waitFor();
+         //System.out.println("(1): " + cmd1);
+         ProcessBuilder pb = new ProcessBuilder(cmd);
+         pb.directory(rgbFolder);
+
+         // TODO: Remove Output
+         pb.redirectOutput(Redirect.INHERIT);
+         pb.redirectError(Redirect.INHERIT);
 
 
-         Process p = Runtime.getRuntime().exec(cmd);
-
+         Process p = pb.start();
          p.waitFor();
 
-         Process p2 = Runtime.getRuntime().exec(cmd2);
+         //System.out.println("(2): " + cmd2);
+         //Process p2 = Runtime.getRuntime().exec(cmd2);
+         //p2.waitFor();
 
-         p2.waitFor();
+         //System.out.println("Step 3" );
+         //Process p3 = Runtime.getRuntime().exec(cmd3);
+         //p3.waitFor();
 
-         Process p3 = Runtime.getRuntime().exec(cmd3);
+         //System.out.println("Step 4" );
+         //Process p4 = Runtime.getRuntime().exec(cmd4);
+         //p4.waitFor();
 
-         p3.waitFor();
+         //System.out.println("Step 5" );
+         //Process p5 = Runtime.getRuntime().exec(cmd5);
+         //p5.waitFor();
 
-         Process p4 = Runtime.getRuntime().exec(cmd4);
-
-         p4.waitFor();
-
-         Process p5 = Runtime.getRuntime().exec(cmd5);
-
-         p5.waitFor();
-
-         Process p6 = Runtime.getRuntime().exec(cmd6);
-
-         p6.waitFor();
+         //System.out.println("Step 6" );
+         //Process p6 = Runtime.getRuntime().exec(cmd6);
+         //p6.waitFor();
 
          System.out.println("Done");
-
-
       } 
       catch (IOException e) 
       {

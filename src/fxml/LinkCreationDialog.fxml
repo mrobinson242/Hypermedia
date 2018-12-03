@@ -5,9 +5,9 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
 
-<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="230.0" prefWidth="300.0" styleClass="dialogPane" type="Pane" xmlns="http://javafx.com/javafx/" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="230.0" prefWidth="300.0" styleClass="dialogPane" type="Pane" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Button fx:id="_createLinkButton" alignment="CENTER" layoutX="25.0" layoutY="160.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="dialogButton" text="Create" textAlignment="CENTER" />
+      <Button fx:id="_createLinkButton" alignment="CENTER" focusTraversable="false" layoutX="25.0" layoutY="160.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="dialogButton" text="Create" textAlignment="CENTER" />
       <Button fx:id="_closeButton" layoutX="185.0" layoutY="160.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="90.0" styleClass="dialogButton" text="Cancel" textAlignment="CENTER" />
       <Label layoutX="25.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="80.0" styleClass="dialogLabel" text="Link Name:" />
       <TextField fx:id="_linkTextField" layoutX="115.0" layoutY="10.0" prefHeight="30.0" prefWidth="160.0" styleClass="dialogTextField" />

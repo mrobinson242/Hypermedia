@@ -541,6 +541,9 @@ public class VideoToolController extends AbstractController
        _hyperlinkFilename.setVisible(true);
        _hyperlinkFilename.setText(file.getName());
 
+       // Update the Current Hyperlink File
+       _currentHyperlinkFile = file;
+
        // Check to see if Link Data is Empty
        if(!linkData.isEmpty())
        {
