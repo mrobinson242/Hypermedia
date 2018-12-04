@@ -1,12 +1,12 @@
 package controllers;
 
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import enums.EFontAwesome;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.stage.FileChooser;
@@ -26,8 +26,6 @@ import javafx.util.Duration;
 import util.PolygonUtil;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import data.Point;
 import java.util.List;
@@ -73,6 +71,12 @@ public class VideoPlayerController extends AbstractController
    @FXML
    private MediaView _videoView;
 
+   @FXML
+   private Label _videoFrameLabel;
+
+   @FXML
+   private Label _videoFrameNumLabel;
+
    /** Current Frame of Video */
    private int _currentFrame;
 
@@ -84,6 +88,9 @@ public class VideoPlayerController extends AbstractController
 
    /** The Start Frame of the Videos */
    private static final int MIN_FRAME = 1;
+   
+   /** Video Scale Factor */
+   private static final double VIDEO_SCALE_FACTOR = 1.5;
 
    /** Hyperlink File Chooser */
    private FileChooser _hyperlinkFileChooser;
@@ -141,6 +148,10 @@ public class VideoPlayerController extends AbstractController
       _pauseButton.setDisable(true);
       _stopButton.setDisable(true);
 
+      // Initialize Video Frame Label
+      _videoFrameLabel.setVisible(false);
+      _videoFrameNumLabel.setVisible(false);
+
       // Initialize Polygon Utility Helper();
       _polygonUtil = new PolygonUtil();
 
@@ -177,8 +188,14 @@ public class VideoPlayerController extends AbstractController
          // Play The Video
          _mediaPlayer.play();
 
+         // Update Video Frame Label
+         _videoFrameLabel.setText("Playing Frame ");
+
          // Disable the Play Button
          _playButton.setDisable(true);
+
+         // Enable the Pause Button
+         _pauseButton.setDisable(false);
       });
    }
 
@@ -192,6 +209,12 @@ public class VideoPlayerController extends AbstractController
       {
          // Pause The Video
          _mediaPlayer.pause();
+
+         // Update Video Frame Label
+         _videoFrameLabel.setText("Paused Frame ");
+
+         // Disable the Pause Button
+         _pauseButton.setDisable(true);
 
          // Enable the Play Button
          _playButton.setDisable(false);
@@ -216,12 +239,9 @@ public class VideoPlayerController extends AbstractController
          _videoSlider.setValue(0.0);
          _videoProgressBar.setProgress(0.0);
 
-         Platform.runLater(() ->
-         {
-            // Redraw Links
-            displayLinks(_currentFrame, _linksVisible);
-         });
-
+         // Update Video Frame Label
+         _videoFrameLabel.setText("Paused Frame ");
+         _videoFrameNumLabel.setText("1");
 
          // Enable the Play Button
          _playButton.setDisable(false);
@@ -285,6 +305,12 @@ public class VideoPlayerController extends AbstractController
       {
          _linkData.setAll(linkData);
 
+         // Update the Vertices for the Video Player
+         for(Link link : _linkData)
+         {
+            link.scaleVertices(VIDEO_SCALE_FACTOR);
+         }
+
          // Get First Link in Hyperlink File
          final Link link = _linkData.get(0);
 
@@ -312,6 +338,12 @@ public class VideoPlayerController extends AbstractController
       _playButton.setDisable(false);
       _pauseButton.setDisable(false);
       _stopButton.setDisable(false);
+
+      // Show Video Frame Labels
+      _videoFrameNumLabel.setText(String.valueOf(frameNum));
+      _videoFrameLabel.setText("Paused Frame " );
+      _videoFrameLabel.setVisible(true);
+      _videoFrameNumLabel.setVisible(true);
 
       // TODO: Remove Debug Statements
       System.out.println("Primary Video: " + primaryVideo);
@@ -356,6 +388,9 @@ public class VideoPlayerController extends AbstractController
 
                // Update Displayed Links
                displayLinks(_currentFrame, _linksVisible);
+
+               // Handle Progress
+               handleProgress();
             }
          });
       }
@@ -405,11 +440,21 @@ public class VideoPlayerController extends AbstractController
             public void changed(ObservableValue<? extends Duration> ov, Duration oldTime, Duration newTime)
             {
                // Null Check Primary Video and video is playing
-               if(_video != null)
+               if(_video != null && !_pauseButton.isDisable())
                {
                   // Update Current Primary Frame
                   double frameTime = (newTime.toSeconds()/FPS) * 1000;
                   _currentFrame = (int) Math.round(frameTime);
+
+                  // Check if Current Frame Value is 0
+                  if(_currentFrame == 0)
+                  {
+                     // Default Current Frame Min to 1
+                     _currentFrame = 1;
+                  }
+
+                  // Update Frame Num Label
+                  _videoFrameNumLabel.setText(String.valueOf(_currentFrame));
 
                   // Only Update if Video Slider is not being Pressed
                   if(!_videoSlider.isPressed())
@@ -445,6 +490,16 @@ public class VideoPlayerController extends AbstractController
             {
                // Update Current Primary Frame
                _currentFrame = newVal.intValue();
+
+               // Check if Current Frame Value is 0
+               if(_currentFrame == 0)
+               {
+                  // Default Current Frame Min to 1
+                  _currentFrame = 1;
+               }
+
+               // Update Frame Number Label
+               _videoFrameNumLabel.setText(String.valueOf(_currentFrame));
 
                // Get the Current Frame Time (Seconds)
                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
@@ -605,6 +660,12 @@ public class VideoPlayerController extends AbstractController
                {
                   // Get New Link Information
                   _linkData.setAll(uploadDataFromFile(hyperlinkFile));
+
+                  // Update the Vertices for the Video Player
+                  for(Link link : _linkData)
+                  {
+                     link.scaleVertices(VIDEO_SCALE_FACTOR);
+                  }
                }
 
                // Set the Video accordingly

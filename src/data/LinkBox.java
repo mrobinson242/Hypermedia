@@ -95,7 +95,7 @@ public class LinkBox
       _polygonUtil = new PolygonUtil();
 
       // Handle Listener on a Link Drag
-      handleLinkDrag();
+      enableDrag();
    }
 
    /**
@@ -136,7 +136,7 @@ public class LinkBox
       _polygonUtil = new PolygonUtil();
 
       // Handle Listener on a Link Drag
-      handleLinkDrag();
+      enableDrag();
    }
 
    /**
@@ -239,6 +239,40 @@ public class LinkBox
    {
       // Update the Visiblity Property of the Link Group
       _linkGroup.setVisible(isVisible);
+   }
+
+   /**
+    * scaleVertices - Updates the Vertice positions in
+    *                 the bounding Box
+    *
+    * @param scaleFactor
+    */
+   public void scaleVertices(final double scaleFactor)
+   {
+      // Iterate over Vertices in Bounding Box
+      for (int i = 0; i < _boundingBox.getPoints().size(); i+=2)
+      {
+         // Initialize Coordinate Indices
+         final int xCoord = i;
+         final int yCoord = i+1;
+
+         // Get Vertex Point
+         double x = _boundingBox.getPoints().get(xCoord);
+         double y = _boundingBox.getPoints().get(yCoord);
+
+         // Set Scaled Value
+         double scaleX = x*scaleFactor;
+         double scaleY = y*scaleFactor;
+
+         // Update the Vertex Values
+         _boundingBox.getPoints().set(xCoord, scaleX);
+         _boundingBox.getPoints().set(yCoord, scaleY);
+      }
+
+      // Create New Anchors based on new Position
+      _boxAnchors.clear();
+      _boxAnchors = createBoxAnchors(_boundingBox, _boundingBox.getPoints());
+      _linkGroup.getChildren().addAll(_boxAnchors);
    }
 
    /**
@@ -345,9 +379,9 @@ public class LinkBox
    }
 
    /**
-    * handleLinkDrag - Handles a Drag of a Link
+    * enableDrag - Handles a Drag of a Link
     */
-   public void handleLinkDrag()
+   public void enableDrag()
    {
       // Mouse Pressed Listener
       _boundingBox.setOnMousePressed(new EventHandler<MouseEvent>()

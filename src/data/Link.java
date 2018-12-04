@@ -393,6 +393,27 @@ public class Link
    }
 
    /**
+    * scaleVertices
+    *
+    * @param scaleFactor
+    */
+   public void scaleVertices(final double scaleFactor)
+   {
+      synchronized (_frameToBoxMap)
+      {
+         // Iterate over each Frame
+         for(int i = _startFrame.get(); i <= _endFrame.get(); ++i)
+         {
+            // Get the Link Box Associated with the Frame
+            LinkBox linkBox = _frameToBoxMap.get(i);
+
+            // Update the Vertices in the Video
+            linkBox.scaleVertices(scaleFactor);
+         }
+      }
+   }
+
+   /**
     * updateCurrentFrame
     */
    public void updateCurrentFrame(final int frameNum)
