@@ -24,11 +24,7 @@
                <items>
                   <MenuItem fx:id="_createLinkMenuItem" mnemonicParsing="false" text="Create Link" />
                   <MenuItem fx:id="_deleteLinkMenuItem" mnemonicParsing="false" text="Delete Link" />
-                  <MenuItem fx:id="_playVideoMenuItem" mnemonicParsing="false" text="Play Video" />
-                  <MenuItem fx:id="_pauseVideoMenuItem" mnemonicParsing="false" text="Pause Video" />
-                  <MenuItem fx:id="_stopVideoMenuItem" mnemonicParsing="false" text="Stop Video" />
                </items></Menu>
-            <Menu mnemonicParsing="false" text="Help" />
          </menus>
       </MenuBar>
       <Pane fx:id="_tabPane" layoutY="30.0" prefHeight="50.0" prefWidth="1200.0" styleClass="tabPane">

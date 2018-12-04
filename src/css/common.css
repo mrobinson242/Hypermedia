@@ -12,6 +12,7 @@
    silverChalice: #B2B2B2; /** Light Gray */
    dodgerBlue: #3189F6;    /** Blue */
    milanoRed: #B9090B;     /** Red  */
+   meteor: #D3870D;        /** Orange */
 
    /** Define Common Color Usage */
    textColor: silverChalice;
@@ -382,14 +383,14 @@ TextFieldTableCell .textfield .label
 
 .table-row-cell:filled:selected
 {
-   -fx-background-color: rgba(49,137,246, 0.3);
-   -fx-border-color: dodgerBlue;
+   -fx-background-color: rgba(211,135,13, 0.3);
+   -fx-border-color: meteor;
 }
 
 /** CSS for a Selected Link */
 #linkSelected
 {
-   -fx-stroke: milanoRed;
+   -fx-stroke: meteor;
    -fx-stroke-width: 3;
    -fx-fill: transparent;
 }
@@ -406,7 +407,7 @@ TextFieldTableCell .textfield .label
 #linkEditable
 {
    -fx-fill: transparent;
-   -fx-stroke: milanoRed;
+   -fx-stroke: meteor;
    -fx-stroke-width: 2.0; 
 }
 

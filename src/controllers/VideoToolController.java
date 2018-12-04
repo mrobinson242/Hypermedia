@@ -292,9 +292,6 @@ public class VideoToolController extends AbstractController
       // Link Selection Table View Listeners
       handleLinkSelectionTable();
 
-      // Handle Hyperlink Selection
-      handleHyperlinkSelection();
-
       // Initialize Observable Map that determines which Link to Highlight
       _highlightLink = FXCollections.observableHashMap();
 
@@ -736,44 +733,6 @@ public class VideoToolController extends AbstractController
       {
          // Delete the Hyperlink
          deleteHyperlink();
-      });
-   }
-
-   /**
-    * handleHyperlinkSelection
-    */
-   private void handleHyperlinkSelection()
-   {
-      // Mouse Press Listener
-      _primaryVideoPane.setOnMousePressed(new EventHandler<MouseEvent>()
-      {
-         @Override public void handle(final MouseEvent mouseEvent)
-         {
-            // Get Mouse Event
-            Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
-
-            // Iterate over the Current Links
-            for(Link link : _linkData)
-            {
-               // Initialize Boolean Indicator
-               boolean isInsidePolygon;
-
-               // Get List of Vertices
-               final List<Point> vertices = link.getVertices(_currentPrimaryFrame);
-               
-               // Ensure that there are Vertices
-               if(!vertices.isEmpty())
-               {
-                  // Check if Mouse Press is inside Polygon
-                  isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices(_currentPrimaryFrame));
-               }
-               else
-               {
-                  // Default to not inside polygon
-                  isInsidePolygon = false;
-               }
-            }
-         }
       });
    }
 

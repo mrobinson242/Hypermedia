@@ -609,11 +609,13 @@ public class Link
             {
                // Allow Link to be edited
                linkBox.setIsEditable(true);
+               linkBox.getBoundingGroup().setMouseTransparent(false);
             }
             else
             {
                // Disallow Link Edits
                linkBox.setIsEditable(false);
+               linkBox.getBoundingGroup().setMouseTransparent(true);
             }
 
             // Update Box Anchors of Link Box

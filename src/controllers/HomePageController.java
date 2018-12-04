@@ -57,15 +57,6 @@ public class HomePageController extends AbstractController
    private MenuItem _deleteLinkMenuItem;
 
    @FXML
-   private MenuItem _playVideoMenuItem;
-
-   @FXML
-   private MenuItem _pauseVideoMenuItem;
-
-   @FXML
-   private MenuItem _stopVideoMenuItem;
-
-   @FXML
    private MenuItem _exitMenuItem;
 
    @FXML
@@ -153,11 +144,6 @@ public class HomePageController extends AbstractController
       _deleteLinkMenuItem.setDisable(true);
       _saveMenuItem.setDisable(true);
 
-      // Disable Video Player Menu Items
-      _playVideoMenuItem.setDisable(true);
-      _pauseVideoMenuItem.setDisable(true);
-      _stopVideoMenuItem.setDisable(true);
-
       // Set Video Tool Pane First
       _contentPane.getChildren().add(_videoToolController.getPane());
 
@@ -199,9 +185,6 @@ public class HomePageController extends AbstractController
       // Set Option Menu Accelerators
       _createLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN));
       _deleteLinkMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN));
-      _playVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN));
-      _pauseVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.U, KeyCombination.ALT_DOWN));
-      _stopVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN));
    }
 
    /**
@@ -439,11 +422,6 @@ public class HomePageController extends AbstractController
          setCreateLinkState(_createLinkAvailable);
          setDeleteLinkState(_deleteLinkAvailable);
          _saveMenuItem.setDisable(false);
-
-         // Disable Menu Items
-         _playVideoMenuItem.setDisable(true);
-         _pauseVideoMenuItem.setDisable(true);
-         _stopVideoMenuItem.setDisable(true);
       });
    }
 
@@ -469,15 +447,6 @@ public class HomePageController extends AbstractController
          _videoToolButton.setSelected(false);
          _videoPlayerButton.setSelected(true);
          _mp4ConverterButton.setSelected(false);
-
-         // Enable Menu Items
-         if(!_currentVideoPlayerFile.getName().equals(""))
-         {
-            // Enable Menu Items
-            _playVideoMenuItem.setDisable(false);
-            _pauseVideoMenuItem.setDisable(false);
-            _stopVideoMenuItem.setDisable(false);
-         }
 
          // Disable Menu Items
          _createLinkMenuItem.setDisable(true);
