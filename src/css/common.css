@@ -348,7 +348,7 @@
 /** CSS for a Selected Link */
 #linkSelected
 {
-   -fx-stroke: dodgerBlue;
+   -fx-stroke: milanoRed;
    -fx-stroke-width: 3;
    -fx-fill: transparent;
 }
@@ -356,7 +356,7 @@
 /** CSS for a Selected Link */
 #linkUnselected
 {
-   -fx-stroke: silverChalice;
+   -fx-stroke: dodgerBlue;
    -fx-stroke-width: 2;
    -fx-fill: transparent;
 }
@@ -365,7 +365,7 @@
 #linkEditable
 {
    -fx-fill: transparent;
-   -fx-stroke: dodgerBlue;
+   -fx-stroke: milanoRed;
    -fx-stroke-width: 2.0; 
 }
 

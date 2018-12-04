@@ -9,11 +9,14 @@ import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.imageio.ImageIO;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -59,6 +62,19 @@ public class MP4ConverterController extends AbstractController
    /** Current Conversion Frame Number  */
    private AtomicReference<Double> _frameNum;
 
+   /** Selected Folder for MP4 Conversion */
+   private File _selectedFolder;
+
+   /** Executor Service for Creating jpegs */
+   ExecutorService _jpegService;
+
+   /** Task for Making MP4 Video */
+   Task _videoTask;
+
+   /** Create Threads for making JPEGS */
+   Runnable _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8;
+   Runnable _t9, _t10, _t11, _t12, _t13, _t14, _t15, _t16, _t17, _t18;
+
    /**
     * Constructor
     *
@@ -86,8 +102,187 @@ public class MP4ConverterController extends AbstractController
       // Initialize the Frame Number
       _frameNum = new AtomicReference<Double>(0.0);
 
+      // Initialize Selected Folder
+      _selectedFolder = new File("");
+
       // Hide conversion Label
       _conversionLabel.setVisible(false);
+
+      // Initialize Threads
+      initializeTheads();
+
+      // Initialize Java Executor Service
+      _jpegService = Executors.newCachedThreadPool();
+   }
+
+   /**
+    * initializeThreads - Initializes the Threads
+    *                     to create the JPEGS
+    */
+   private void initializeTheads()
+   {
+      // Initialize new Runnable
+      _t1 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(1, 500);
+         }
+      };
+
+      _t2 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(501, 1000);
+         }
+      };
+
+      _t3 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(1001, 1500);
+         }
+      };
+
+      _t4 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(1501, 2000);
+         }
+      };
+
+      _t5 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(2001, 2500);
+         }
+      };
+
+      _t6 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(2501, 3000);
+         }
+      };
+
+      _t7 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(3001, 3500);
+         }
+      };
+
+      _t8 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(3501, 4000);
+         }
+      };
+
+      _t9 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(4001, 4500);
+         }
+      };
+
+      _t10 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(4501, 5000);
+         }
+      };
+
+      _t11 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(5001, 5500);
+         }
+      };
+
+      _t12 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(5501, 6000);
+         }
+      };
+
+      _t13 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(6001, 6500);
+         }
+      };
+
+      _t14 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(6501, 7000);
+         }
+      };
+
+      _t15 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(7001, 7500);
+         }
+      };
+
+      _t16 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(7501, 8000);
+         }
+      };
+
+      _t17 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(8001, 8500);
+         }
+      };
+
+      _t18 = new Runnable()
+      {
+         @Override
+         public void run() 
+         {
+            convertImages(8501, 9000);
+         }
+      };
    }
 
    /**
@@ -102,59 +297,94 @@ public class MP4ConverterController extends AbstractController
          // Display the Select Folder Chooser Dialog
          final File rgbFolder = _selectFolderChooser.showDialog(_primaryStage);
 
-         // Update Conversion Label
-         StringBuilder builder = new StringBuilder();
-         builder.append("Converting ");
-         builder.append(rgbFolder.getName());
-         builder.append(" to MP4");
-         _conversionLabel.setText(builder.toString());
-         _conversionLabel.setVisible(true);
-
-         // Null Check RGB Folder
+         // Null Check Folder Selection
          if(rgbFolder != null)
          {
-            // Initialize new Runnable
-            Runnable r = new Runnable()
+            // Update Selected Folder
+            _selectedFolder = rgbFolder;
+
+            // Update Conversion Label
+            StringBuilder builder = new StringBuilder();
+            builder.append("Converting ");
+            builder.append(rgbFolder.getName());
+            builder.append(" to MP4");
+            _conversionLabel.setText(builder.toString());
+            _conversionLabel.setVisible(true);
+
+            // Restart Executor Service
+            _jpegService = Executors.newCachedThreadPool();
+
+            // Initialize the Generate Video Task
+            Task t = new Task<Void>()
             {
                @Override
-               public void run() 
+               protected Void call() throws Exception
                {
-                  convertFolder(rgbFolder);
+                  // Null Check RGB Folder
+                  if(_selectedFolder != null)
+                  {
+                     // Kick off Image Creating Threads
+                     _jpegService.execute(_t1); _jpegService.execute(_t2);
+                     _jpegService.execute(_t3); _jpegService.execute(_t4);
+                     _jpegService.execute(_t5); _jpegService.execute(_t6);
+                     _jpegService.execute(_t7); _jpegService.execute(_t8);
+                     _jpegService.execute(_t9); _jpegService.execute(_t10);
+                     _jpegService.execute(_t11); _jpegService.execute(_t12);
+                     _jpegService.execute(_t13); _jpegService.execute(_t14);
+                     _jpegService.execute(_t15); _jpegService.execute(_t16);
+                     _jpegService.execute(_t17); _jpegService.execute(_t18);
+
+                     // Shutdown Executor
+                     _jpegService.shutdown();
+
+                     // Await Termination of Image Generating Threads
+                     while(!_jpegService.isTerminated()){}
+
+                     // Update Progress
+                     updateProgress(7200, 9000);
+
+                     // Generate the Video
+                     generateVideo();
+
+                     // Update Progress
+                     updateProgress(9000, 9000);
+                  }
+                  return null;
                }
             };
 
-            // Start Conversion in Separate Thread
-            new Thread(r).start();
+            // Update the Progress Bar (up to 80%)
+            _fileConversionProgressBar.progressProperty().bind(t.progressProperty());
+
+            // Start Video Task
+            Thread thread = new Thread(t);
+            thread.start();
          }
       });
    }
 
    /**
-    * convertFolder - Converts the Folder of ".rgb" images and a ".wav"
-    *                 image into a usable ".mp4" file
+    * convertImages
     */
-   private void convertFolder(final File rgbFolder)
+   private void convertImages(final int startFrame, final int endFrame)
    {
       // Create BufferedImage
       BufferedImage img;
 
       // Get Name of Folder
-      final String folderName = rgbFolder.getName();
+      final File rgbFolder = _selectedFolder;
 
       // Get Folder Path
       StringBuilder path = new StringBuilder();
       path.append(rgbFolder.getAbsolutePath());
       String folderPath = path.toString();
 
-      double imageCount = 1.0;
-      String soundFile = folderPath + "/" + rgbFolder.getName() + ".wav";
-
-      // Iterate over Image Size
-      for (int i = 1; i <= FRAMES; i++)
+      // Iterate over specified frames
+      for (int i = startFrame; i <= endFrame; i++)
       {
          // Set the File Number
-         _frameNum.set(imageCount);
-         imageCount += 1.0;
+         double num = _frameNum.get() + 1.0;
+         _frameNum.set(num);
 
          // Get RGB File Name String
          String fileName = folderPath + "/" + rgbFolder.getName() + String.format("%04d", i) + ".rgb";
@@ -212,13 +442,7 @@ public class MP4ConverterController extends AbstractController
             }
          }
 
-         // OffLoad to Display Thread
-         Platform.runLater(() ->
-         {
-            // Update the Progress Bar (up to 80%)
-            _fileConversionProgressBar.setProgress((_frameNum.get()/FRAMES) * (0.8));
-         });
-
+         // Generate output JPEG File
          String s = file.getName();
          int position = s.lastIndexOf(".");
          s = s.substring(0, position);
@@ -226,6 +450,7 @@ public class MP4ConverterController extends AbstractController
 
          try 
          {
+            // Write out JPEG File
             ImageIO.write(img, "jpg", outputfile);
          } 
          catch (IOException e) 
@@ -233,6 +458,17 @@ public class MP4ConverterController extends AbstractController
             e.printStackTrace();
          }
       }
+   }
+
+   /**
+    * generateVideo - Converts the Folder of ".jpg" images and a ".wav"
+    *                 image into a usable ".mp4" file
+    */
+   private void generateVideo()
+   {
+      // Get Folder Name
+      final File rgbFolder = _selectedFolder;
+      final String folderName = _selectedFolder.getName();
 
       // Command Strings
       String ffmpeg = "C:\\Program Files\\ffmpeg\\bin\\ffmpeg";
@@ -250,32 +486,18 @@ public class MP4ConverterController extends AbstractController
          // Output the Video File (Images Only)
          ProcessBuilder pb = new ProcessBuilder(videoParams);
          pb.directory(rgbFolder);
-         pb.redirectOutput(Redirect.INHERIT); // TODO: Remove Output
-         pb.redirectError(Redirect.INHERIT);  // TODO: Remove Output
+         pb.redirectOutput(Redirect.INHERIT);
+         pb.redirectError(Redirect.INHERIT);
          Process p = pb.start();
          p.waitFor();
-
-         // OffLoad to Display Thread
-         Platform.runLater(() ->
-         {
-            // Update the Progress Bar (up to 90%)
-            _fileConversionProgressBar.setProgress(0.9);
-         });
 
          // Output the Video File with Audio (Audio Added)
          ProcessBuilder pb2 = new ProcessBuilder(audioParams);
          pb2.directory(rgbFolder);
-         pb2.redirectOutput(Redirect.INHERIT); // TODO: Remove Output
-         pb2.redirectError(Redirect.INHERIT);  // TODO: Remove Output
+         pb2.redirectOutput(Redirect.INHERIT);
+         pb2.redirectError(Redirect.INHERIT);
          Process p2 = pb2.start();
          p2.waitFor();
-
-         // OffLoad to Display Thread
-         Platform.runLater(() ->
-         {
-            // Update the Progress Bar (up to 100%)
-            _fileConversionProgressBar.setProgress(1.0);
-         });
 
          // Delete the JPEG Files
          deleteJpeg(rgbFolder);
