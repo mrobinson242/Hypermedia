@@ -1,5 +1,6 @@
 package controllers;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import enums.EFontAwesome;
@@ -14,6 +15,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import data.Link;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
@@ -23,6 +25,9 @@ import javafx.scene.media.MediaView;
 import javafx.util.Duration;
 import util.PolygonUtil;
 import javafx.event.EventHandler;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import data.Point;
 import java.util.List;
@@ -104,6 +109,9 @@ public class VideoPlayerController extends AbstractController
    /** Path to Hyperlink Files on a System's Computer */
    private File _hyperlinkFilePath;
 
+   /** Links Visibility Indicator */
+   private Boolean _linksVisible;
+
    /**
     * Constructor
     *
@@ -150,8 +158,12 @@ public class VideoPlayerController extends AbstractController
       // Initialize Slider States
       _videoSlider.setDisable(true);
       _videoProgressBar.setDisable(true);
-      handleHyperlinkSelection();
 
+      // Initialize Links Visibility Indicator
+      _linksVisible = true;
+
+      // Handle Selection of Hyperlinks
+      handleHyperlinkSelection();
    }
 
    /**
@@ -180,7 +192,7 @@ public class VideoPlayerController extends AbstractController
       {
          // Pause The Video
          _mediaPlayer.pause();
-         
+
          // Enable the Play Button
          _playButton.setDisable(false);
       });
@@ -204,6 +216,13 @@ public class VideoPlayerController extends AbstractController
          _videoSlider.setValue(0.0);
          _videoProgressBar.setProgress(0.0);
 
+         Platform.runLater(() ->
+         {
+            // Redraw Links
+            displayLinks(_currentFrame, _linksVisible);
+         });
+
+
          // Enable the Play Button
          _playButton.setDisable(false);
       });
@@ -223,13 +242,44 @@ public class VideoPlayerController extends AbstractController
    }
 
    /**
+    * addKeyboardListener - Adds a Keyboard Event Listener
+    */
+   public void addKeyboardListener()
+   {
+      // Key Pressed Listener
+      _primaryStage.getScene().setOnKeyPressed(event ->
+      {
+         // Update Link Visibility Indicator
+         if(_linksVisible)
+         {
+            _linksVisible = false;
+         }
+         else
+         {
+            _linksVisible = true;
+         }
+
+         // Check if L Key is Pressed
+         if(event.getCode().equals(KeyCode.L))
+         {
+            // Check if Link Data is Empty
+            if(!_linkData.isEmpty())
+            {
+               // Display Links
+               displayLinks(_currentFrame, _linksVisible);
+            }
+         }
+      });
+   }
+
+   /**
     * loadVideo
     */
    public void loadVideo(ArrayList<Link> linkData)
    {
       // Update with Latest Data
       _linkData.clear();
-      
+
       // Check that there is Link Data
       if(!linkData.isEmpty())
       {
@@ -242,8 +292,7 @@ public class VideoPlayerController extends AbstractController
          setVideo(link.getFromVideo(), 1);
 
          // Update Links
-         displayLinks(_currentFrame);
-
+         displayLinks(_currentFrame, _linksVisible);
       }
    }
 
@@ -306,7 +355,7 @@ public class VideoPlayerController extends AbstractController
                _videoSlider.setValue(_currentFrame);
 
                // Update Displayed Links
-               displayLinks(_currentFrame);
+               displayLinks(_currentFrame, _linksVisible);
             }
          });
       }
@@ -328,9 +377,9 @@ public class VideoPlayerController extends AbstractController
       _videoProgressBar.setDisable(false);
 
       // Get Number of Frames
-       Duration duration = _mediaPlayer.getTotalDuration();
-       int totalSeconds = (int) Math.round(duration.toSeconds());
-       int totalFrames = totalSeconds * 30;
+      Duration duration = _mediaPlayer.getTotalDuration();
+      int totalSeconds = (int) Math.round(duration.toSeconds());
+      int totalFrames = totalSeconds * 30;
 
       // Set Slider Properties
       _videoSlider.setMin(MIN_FRAME);
@@ -374,7 +423,7 @@ public class VideoPlayerController extends AbstractController
                   }
 
                   // Display Links associated with Current Frame
-                  displayLinks(_currentFrame);
+                  displayLinks(_currentFrame, _linksVisible);
                }
             }
          });
@@ -392,7 +441,7 @@ public class VideoPlayerController extends AbstractController
          public void changed(ObservableValue<? extends Number> ov, Number oldVal, Number newVal)
          {
             // Null Check Primary Video and ensure Video is not playing
-            if(_video != null && (_videoSlider.isPressed() || _playButton.isDisabled()))
+            if(_video != null && (_videoSlider.isPressed() || !_playButton.isDisabled()))
             {
                // Update Current Primary Frame
                _currentFrame = newVal.intValue();
@@ -410,7 +459,7 @@ public class VideoPlayerController extends AbstractController
                _mediaPlayer.seek(new Duration(frameTime));
 
                // Display Links associated with Current Frame
-               displayLinks(_currentFrame);
+               displayLinks(_currentFrame, _linksVisible);
             }
          }
       });
@@ -438,7 +487,7 @@ public class VideoPlayerController extends AbstractController
     *
     * @param frameNum - The Currently Displayed Frame
     */
-   private void displayLinks(final int frameNum)
+   private void displayLinks(final int frameNum, final boolean linksVisible)
    {
       // Clear existing Links
       _videoPane.getChildren().clear();
@@ -452,6 +501,9 @@ public class VideoPlayerController extends AbstractController
          // Iterate over all Links associated with the frame
          for(Link link : _linkData)
          {
+            // Update Link Visibility Accordingly
+            link.setVisible(linksVisible);
+
             // Ensure Link is Associated with the Video
             if(link.getFromVideo().equals(_video))
             {
@@ -502,7 +554,7 @@ public class VideoPlayerController extends AbstractController
 
                // Get List of Vertices
                final List<Point> vertices = link.getVertices(_currentFrame);
-               
+
                // Ensure that there are Vertices
                if(!vertices.isEmpty())
                {
@@ -599,7 +651,7 @@ public class VideoPlayerController extends AbstractController
             {
                String frame = (String) frames.next();
                JSONArray pointInfo = (JSONArray) frameInfo.get(frame);
-               
+
                Iterator points = pointInfo.iterator();
                ArrayList<Double> pList = new ArrayList<Double>();
 

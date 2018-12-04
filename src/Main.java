@@ -7,9 +7,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import controllers.VideoToolController;
-import controllers.VideoPlayerController;
-import controllers.MP4ConverterController;
 
 /**
  * Main
@@ -35,6 +32,9 @@ public class Main extends Application
       // Set Attributes of Application
       stage.setTitle("Hypermedia Application");
       stage.setScene(scene);
+
+      // Adds a Keyboard Listener to Controllers
+      homePage.addKeyboardListener();
 
       // Add CSS
       scene.getStylesheets().add("/css/common.css");

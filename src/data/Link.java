@@ -372,6 +372,27 @@ public class Link
    }
 
    /**
+    * setVisible - Set the Visibility of the Link
+    *
+    * @param isVisible - Is Visible Indicator
+    */
+   public void setVisible(final boolean isVisible)
+   {
+      synchronized (_frameToBoxMap)
+      {
+         // Iterate over each Frame
+         for(int i = _startFrame.get(); i <= _endFrame.get(); ++i)
+         {
+            // Get the Link Box Associated with the Frame
+            LinkBox linkBox = _frameToBoxMap.get(i);
+
+            // Update the Visibility Property of the Link
+            linkBox.setIsVisible(isVisible);
+         }
+      }
+   }
+
+   /**
     * updateCurrentFrame
     */
    public void updateCurrentFrame(final int frameNum)

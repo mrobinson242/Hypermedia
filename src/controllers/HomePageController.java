@@ -151,6 +151,7 @@ public class HomePageController extends AbstractController
       // Disable Unavailable Video Tool Menu Items
       _createLinkMenuItem.setDisable(true);
       _deleteLinkMenuItem.setDisable(true);
+      _saveMenuItem.setDisable(true);
 
       // Disable Video Player Menu Items
       _playVideoMenuItem.setDisable(true);
@@ -191,7 +192,7 @@ public class HomePageController extends AbstractController
       _newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
       _openFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
       _importPrimaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
-      _importSecondaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN));
+      _importSecondaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN));
       _saveMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN));
       _exitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN));
 
@@ -201,6 +202,14 @@ public class HomePageController extends AbstractController
       _playVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN));
       _pauseVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.U, KeyCombination.ALT_DOWN));
       _stopVideoMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN));
+   }
+
+   /**
+    * addKeyboardListener - Adds a Keyboard Event Listener
+    */
+   public void addKeyboardListener()
+   {
+      _videoPlayerController.addKeyboardListener();
    }
 
    /**
@@ -304,6 +313,9 @@ public class HomePageController extends AbstractController
       // Null Check Hyperlink File
       if(hyperlinkFile != null)
       {
+         // Allow Saving
+         _saveMenuItem.setDisable(false);
+
          // Upload Data from File
          final ArrayList<Link> linkData = uploadDataFromFile(hyperlinkFile);
 

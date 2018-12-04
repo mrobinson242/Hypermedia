@@ -231,6 +231,17 @@ public class LinkBox
    }
 
    /**
+    * setIsVisible
+    *
+    * @param isVisible
+    */
+   public void setIsVisible(final boolean isVisible)
+   {
+      // Update the Visiblity Property of the Link Group
+      _linkGroup.setVisible(isVisible);
+   }
+
+   /**
     * createBoundingArea - Creates a Default Bounding Box
     *                      in the center of the Primary
     *                      Video View

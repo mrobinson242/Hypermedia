@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.Arrays;
 import java.util.List;
@@ -15,11 +14,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.imageio.ImageIO;
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -35,6 +33,9 @@ public class MP4ConverterController extends AbstractController
 
    @FXML
    private ProgressBar _fileConversionProgressBar;
+
+   @FXML
+   private Label _conversionLabel;
 
    /** FXML filename associated with this Controller */
    private static final String FXML_NAME = "Mp4Converter.fxml";
@@ -84,6 +85,9 @@ public class MP4ConverterController extends AbstractController
 
       // Initialize the Frame Number
       _frameNum = new AtomicReference<Double>(0.0);
+
+      // Hide conversion Label
+      _conversionLabel.setVisible(false);
    }
 
    /**
@@ -97,6 +101,14 @@ public class MP4ConverterController extends AbstractController
       {
          // Display the Select Folder Chooser Dialog
          final File rgbFolder = _selectFolderChooser.showDialog(_primaryStage);
+
+         // Update Conversion Label
+         StringBuilder builder = new StringBuilder();
+         builder.append("Converting ");
+         builder.append(rgbFolder.getName());
+         builder.append(" to MP4");
+         _conversionLabel.setText(builder.toString());
+         _conversionLabel.setVisible(true);
 
          // Null Check RGB Folder
          if(rgbFolder != null)
@@ -138,7 +150,7 @@ public class MP4ConverterController extends AbstractController
       String soundFile = folderPath + "/" + rgbFolder.getName() + ".wav";
 
       // Iterate over Image Size
-      for (int i = 1; i <= 500; i++)
+      for (int i = 1; i <= FRAMES; i++)
       {
          // Set the File Number
          _frameNum.set(imageCount);
@@ -146,7 +158,6 @@ public class MP4ConverterController extends AbstractController
 
          // Get RGB File Name String
          String fileName = folderPath + "/" + rgbFolder.getName() + String.format("%04d", i) + ".rgb";
-
 
          // Create RGB File Object
          File file = new File(fileName);
@@ -204,8 +215,8 @@ public class MP4ConverterController extends AbstractController
          // OffLoad to Display Thread
          Platform.runLater(() ->
          {
-            // Update the Progress Bar
-            _fileConversionProgressBar.setProgress(_frameNum.get()/FRAMES);
+            // Update the Progress Bar (up to 80%)
+            _fileConversionProgressBar.setProgress((_frameNum.get()/FRAMES) * (0.8));
          });
 
          String s = file.getName();
@@ -223,68 +234,62 @@ public class MP4ConverterController extends AbstractController
          }
       }
 
-      // ffmpeg string
+      // Command Strings
       String ffmpeg = "C:\\Program Files\\ffmpeg\\bin\\ffmpeg";
-      String frameRate = " -framerate 30";
-      String folderPath2 = rgbFolder.getAbsolutePath() + "\\";
-      File file = new File(folderPath2);
       String filePath = rgbFolder.getAbsolutePath() + "\\" + folderName + "%04d.jpg ";
       String audioPath = rgbFolder.getAbsolutePath() + "\\" + folderName + ".wav";
+      String tempVideoPath = rgbFolder.getAbsolutePath() + "\\" + "tempVideo.mp4";
       String videoPath = rgbFolder.getAbsolutePath() + "\\" + folderName + ".mp4";
 
+      // Format Commands
+      List<String> videoParams = Arrays.asList(ffmpeg, "-f", "image2", "-r", "30", "-i", filePath, tempVideoPath);
+      List<String> audioParams = Arrays.asList(ffmpeg, "-i", tempVideoPath, "-i", audioPath, "-vcodec",  "copy", "-shortest", videoPath);
 
-      // Initialize MPG4 Creation Commands
-      //String cmd0 = "copy " + audioPath + " .";
-      String cmd = ffmpeg + "-i " + folderName + "%04d.jpg " + folderName + ".mp4";
-      //String cmd2 = ffmpeg + " -i out" + videoPath +" -i " + audioPath + " -vcodec copy " + videoPath;
-      //String cmd = ffmpeg + " -framerate 30 -i " + folderName + "%04d.jpg " + folderName + ".mp4";
-      //String cmd2 = "ffmpeg -i out" + folderName + ".mp4 -i " + folderName + ".wav -vcodec copy " + folderName + ".mp4";
-      //String cmd3 = "mv " + folderName + ".mp4 " + _desktopPath.getAbsolutePath();
-      //String[] cmd4 = {"/bin/sh", "-c", "rm -rf ./*.jpg"};
-      //String cmd5 = "rm " + folderName + ".wav";
-      //String cmd6 = "rm out" + folderName + ".mp4";
-
-      List<String> params = Arrays.asList("C:\\Program Files\\ffmpeg\\bin\\ffmpeg", " -i ", folderName + "%04d.jpg ", folderName + ".mp4");
-      //String cmd1 = ffmpeg + " -framerate 30 -i " + folderName + "%04d.jpg " + folderName + ".mp4";
       try 
       {
-         //System.out.println("Step 0" );
-         //Process p0 = Runtime.getRuntime().exec(cmd0);
-         //p0.waitFor();
-
-         //System.out.println("(1): " + cmd1);
-         ProcessBuilder pb = new ProcessBuilder(cmd);
+         // Output the Video File (Images Only)
+         ProcessBuilder pb = new ProcessBuilder(videoParams);
          pb.directory(rgbFolder);
-
-         // TODO: Remove Output
-         pb.redirectOutput(Redirect.INHERIT);
-         pb.redirectError(Redirect.INHERIT);
-
-
+         pb.redirectOutput(Redirect.INHERIT); // TODO: Remove Output
+         pb.redirectError(Redirect.INHERIT);  // TODO: Remove Output
          Process p = pb.start();
          p.waitFor();
 
-         //System.out.println("(2): " + cmd2);
-         //Process p2 = Runtime.getRuntime().exec(cmd2);
-         //p2.waitFor();
+         // OffLoad to Display Thread
+         Platform.runLater(() ->
+         {
+            // Update the Progress Bar (up to 90%)
+            _fileConversionProgressBar.setProgress(0.9);
+         });
 
-         //System.out.println("Step 3" );
-         //Process p3 = Runtime.getRuntime().exec(cmd3);
-         //p3.waitFor();
+         // Output the Video File with Audio (Audio Added)
+         ProcessBuilder pb2 = new ProcessBuilder(audioParams);
+         pb2.directory(rgbFolder);
+         pb2.redirectOutput(Redirect.INHERIT); // TODO: Remove Output
+         pb2.redirectError(Redirect.INHERIT);  // TODO: Remove Output
+         Process p2 = pb2.start();
+         p2.waitFor();
 
-         //System.out.println("Step 4" );
-         //Process p4 = Runtime.getRuntime().exec(cmd4);
-         //p4.waitFor();
+         // OffLoad to Display Thread
+         Platform.runLater(() ->
+         {
+            // Update the Progress Bar (up to 100%)
+            _fileConversionProgressBar.setProgress(1.0);
+         });
 
-         //System.out.println("Step 5" );
-         //Process p5 = Runtime.getRuntime().exec(cmd5);
-         //p5.waitFor();
+         // Delete the JPEG Files
+         deleteJpeg(rgbFolder);
 
-         //System.out.println("Step 6" );
-         //Process p6 = Runtime.getRuntime().exec(cmd6);
-         //p6.waitFor();
-
-         System.out.println("Done");
+         // OffLoad to Display Thread
+         Platform.runLater(() ->
+         {
+            // Update Conversion Label
+            StringBuilder builder = new StringBuilder();
+            builder.append("Successful Conversion of ");
+            builder.append(rgbFolder.getName());
+            builder.append(" to MP4");
+            _conversionLabel.setText(builder.toString());
+         });
       } 
       catch (IOException e) 
       {
@@ -293,6 +298,30 @@ public class MP4ConverterController extends AbstractController
       catch (InterruptedException e)
       {
          e.printStackTrace();
+      }
+   }
+
+   /**
+    * deleteJpeg - Deletes the JPEG Files
+    *              in the Specified Folder
+    */
+   private void deleteJpeg(final File folder)
+   {
+      // Iterate over all the JPEG Files
+      for(int i =1; i <= FRAMES; i++)
+      {
+         // Get JPEG Filename
+         String filename = folder + "\\" + folder.getName() + String.format("%04d", i) + ".jpg";
+
+         // Get JPEG File
+         File file = new File(filename);
+
+         // Check that file exists
+         if(file.exists())
+         {
+            // Delete the File
+            file.delete();
+         }
       }
    }
 }

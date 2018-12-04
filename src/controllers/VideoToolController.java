@@ -2,7 +2,6 @@ package controllers;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Map;
 
 import data.Link;
 import data.Point;
@@ -55,8 +54,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import com.google.gson.JsonElement;
-
-
 
 /**
  * VideoToolController - Controls the User Interaction on the
@@ -249,6 +246,7 @@ public class VideoToolController extends AbstractController
       // Initialize Button States
       _deleteLinkButton.setDisable(true);
       _createLinkButton.setDisable(true);
+      _saveButton.setDisable(true);
 
       // Initialize Slider States
       _primaryVideoSlider.setDisable(true);
@@ -543,6 +541,9 @@ public class VideoToolController extends AbstractController
 
        // Update the Current Hyperlink File
        _currentHyperlinkFile = file;
+
+       // Allow Saving
+       _saveButton.setDisable(false);
 
        // Check to see if Link Data is Empty
        if(!linkData.isEmpty())
