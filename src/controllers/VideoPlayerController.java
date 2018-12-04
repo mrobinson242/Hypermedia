@@ -77,6 +77,9 @@ public class VideoPlayerController extends AbstractController
    @FXML
    private Label _videoFrameNumLabel;
 
+   @FXML
+   private Label _hyperlinkFilename;
+
    /** Current Frame of Video */
    private int _currentFrame;
 
@@ -151,10 +154,12 @@ public class VideoPlayerController extends AbstractController
       // Initialize Video Frame Label
       _videoFrameLabel.setVisible(false);
       _videoFrameNumLabel.setVisible(false);
+      _hyperlinkFilename.setVisible(false);
 
       // Initialize Polygon Utility Helper();
       _polygonUtil = new PolygonUtil();
 
+      // Initialize Path to Hyperlink File
       _hyperlinkFilePath = new File(System.getProperty("user.home"), "Desktop/Hypermedia");
 
       // Button Listeners
@@ -173,7 +178,7 @@ public class VideoPlayerController extends AbstractController
       // Initialize Links Visibility Indicator
       _linksVisible = true;
 
-      // Handle Selection of Hyperlinks
+      // Handle Selection of HyperLinks
       handleHyperlinkSelection();
    }
 
@@ -196,6 +201,7 @@ public class VideoPlayerController extends AbstractController
 
          // Enable the Pause Button
          _pauseButton.setDisable(false);
+         _stopButton.setDisable(false);
       });
    }
 
@@ -218,6 +224,9 @@ public class VideoPlayerController extends AbstractController
 
          // Enable the Play Button
          _playButton.setDisable(false);
+
+         // Give Focus to Video Slider
+         _videoSlider.requestFocus();
       });
    }
 
@@ -229,22 +238,39 @@ public class VideoPlayerController extends AbstractController
       // Process Click of Stop Button
       _stopButton.setOnAction(event ->
       {
-         // Stop Media Player
-         _mediaPlayer.pause();
+         // Disable Stop/Pause Button
+         _pauseButton.setDisable(true);
+         _stopButton.setDisable(true);
 
-         // Reset to Start of Video
-         _mediaPlayer.seek(new Duration(0.0));
+         // OffLoad to Display Thread
+         Platform.runLater(()->
+         {
+            // Stop Media Player
+            _mediaPlayer.pause();
 
-         // Update Slider/Progress to Start of Video
-         _videoSlider.setValue(0.0);
-         _videoProgressBar.setProgress(0.0);
+            // Reset to Start of Video
+            _mediaPlayer.seek(new Duration(0.0));
 
-         // Update Video Frame Label
-         _videoFrameLabel.setText("Paused Frame ");
-         _videoFrameNumLabel.setText("1");
+            // Update Slider/Progress to Start of Video
+            _videoSlider.setValue(0.0);
+            _videoProgressBar.setProgress(0.0);
 
-         // Enable the Play Button
-         _playButton.setDisable(false);
+            // Update Video Frame Label
+            _videoFrameLabel.setText("Paused Frame ");
+            _videoFrameNumLabel.setText("1");
+
+            // Update Current Frame
+            _currentFrame = 1;
+
+            // Display Links associated with Current Frame
+            displayLinks(_currentFrame, _linksVisible);
+
+            // Enable the Play Button
+            _playButton.setDisable(false);
+
+            // Give Focus to Video Slider
+            _videoSlider.requestFocus();
+         });
       });
    }
 
@@ -319,6 +345,9 @@ public class VideoPlayerController extends AbstractController
 
          // Update Links
          displayLinks(_currentFrame, _linksVisible);
+
+         // Give Focus to Video Slider
+         _videoSlider.requestFocus();
       }
    }
 
@@ -336,18 +365,14 @@ public class VideoPlayerController extends AbstractController
 
       // Update Button States
       _playButton.setDisable(false);
-      _pauseButton.setDisable(false);
-      _stopButton.setDisable(false);
 
       // Show Video Frame Labels
+      _hyperlinkFilename.setText(FilenameUtils.getBaseName(primaryVideo.getName()));
       _videoFrameNumLabel.setText(String.valueOf(frameNum));
       _videoFrameLabel.setText("Paused Frame " );
       _videoFrameLabel.setVisible(true);
       _videoFrameNumLabel.setVisible(true);
-
-      // TODO: Remove Debug Statements
-      System.out.println("Primary Video: " + primaryVideo);
-      System.out.println("Frame Number: " + frameNum);
+      _hyperlinkFilename.setVisible(true);
 
       try 
       {
@@ -496,6 +521,13 @@ public class VideoPlayerController extends AbstractController
                {
                   // Default Current Frame Min to 1
                   _currentFrame = 1;
+               }
+
+               // Check if Current Frame is Greater than initial frame
+               if(_currentFrame > 1)
+               {
+                  // Enable Stop Button
+                  _stopButton.setDisable(false);
                }
 
                // Update Frame Number Label
