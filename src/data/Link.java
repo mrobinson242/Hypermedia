@@ -3,8 +3,10 @@ package data;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -344,6 +346,36 @@ public class Link
    }
 
    /**
+    * setLinkName - Sets the Name of the Link
+    *
+    * @param linkName - Name of the Link
+    */
+   public void setLinkName(final String linkName)
+   {
+      _linkName.set(linkName);
+   }
+
+   /**
+    * setStartFrame
+    *
+    * @param startFrame - The Start Frame
+    */
+   public void setStartFrame(final int startFrame)
+   {
+      _startFrame.set(startFrame);
+   }
+
+   /**
+    * setEndFrame
+    *
+    * @param endFrame
+    */
+   public void setEndFrame(final int endFrame)
+   {
+      _endFrame.set(endFrame);
+   }
+
+   /**
     * setToFrame - Sets the Frame of the video
     *              the Hyperlink points toward
     *
@@ -455,6 +487,106 @@ public class Link
 
             // Update Bounding Box Anchors Style
             linkBox.updateBoxAnchors(isSelected);
+         }
+      }
+   }
+
+   /**
+    * updateStartFrameBoundingGroup - Updates Bounding Box Link Group
+    */
+   public void updateStartFrameBoundingGroup(final int oldValue)
+   {
+      // Initialize Set of Irrelevant Frames
+      Set<Integer> irrelevantFrames = new HashSet<Integer>();
+
+      synchronized (_frameToBoxMap)
+      {
+         // Remove irrelevant frame
+         for(Integer frameNum : _frameToBoxMap.keySet())
+         {
+            // If less than start or end frames
+            if(frameNum < _startFrame.get())
+            {
+               // add to list of irrelevant frames
+               irrelevantFrames.add(frameNum);
+            }
+         }
+
+         // Iterate over each Frame
+         for(int i = _startFrame.get(); i <= _endFrame.get(); ++i)
+         {
+            // Create a New Link Bounding Box
+            LinkBox linkBox = _frameToBoxMap.get(i);
+
+            // Null Check Link Box
+            if(linkBox == null)
+            {
+               // Get LinkBox of Old Start/End Value
+               LinkBox oldBox = _frameToBoxMap.get(oldValue);
+
+               // Null Check Old Box
+               if(oldBox != null)
+               {
+                  // Add Bounding Box to Map
+                  _frameToBoxMap.put(i, oldBox);
+               }
+            }
+         }
+
+         // Iterate over Irrelevant Frames
+         for(Integer frame : irrelevantFrames)
+         {
+            _frameToBoxMap.remove(frame);
+         }
+      }
+   }
+
+   /**
+    * updateEndFrameBoundingGroup - Updates Bounding Box Link Group
+    */
+   public void updateEndFrameBoundingGroup(final int oldValue)
+   {
+      // Initialize Set of Irrelevant Frames
+      Set<Integer> irrelevantFrames = new HashSet<Integer>();
+
+      synchronized (_frameToBoxMap)
+      {
+         // Remove irrelevant frame
+         for(Integer frameNum : _frameToBoxMap.keySet())
+         {
+            // If less than start or end frames
+            if(frameNum > _endFrame.get() && oldValue > _endFrame.get())
+            {
+               // add to list of irrelevant frames
+               irrelevantFrames.add(frameNum);
+            }
+         }
+
+         // Iterate over each Frame
+         for(int i = _startFrame.get(); i <= _endFrame.get(); ++i)
+         {
+            // Create a New Link Bounding Box
+            LinkBox linkBox = _frameToBoxMap.get(i);
+
+            // Null Check Link Box
+            if(linkBox == null)
+            {
+               // Get LinkBox of Old Start/End Value
+               LinkBox oldBox = _frameToBoxMap.get(oldValue);
+
+               // Null Check Old Box
+               if(oldBox != null)
+               {
+                  // Add Bounding Box to Map
+                  _frameToBoxMap.put(i, oldBox);
+               }
+            }
+         }
+
+         // Iterate over Irrelevant Frames
+         for(Integer frame : irrelevantFrames)
+         {
+            _frameToBoxMap.remove(frame);
          }
       }
    }

@@ -184,15 +184,6 @@ public class LinkCreationDialog extends AbstractDialog
             // Enable/Disable Create Link Button 
             // based on if Text Field has input
             _createLinkButton.setDisable(newValue.isEmpty());
-
-//            // Check if End Frame is less than Start Frame
-//            if(_startFrameTextField.getTex > _numericEndFrameTextField.getIntValue())
-//            {
-//               System.out.println("IN THIS CASE");
-//               // Update Text Fields
-//               _numericEndFrameTextField.setText(_numericStartFrameTextField.getText());
-//               _endFrameTextField.setText(_startFrameTextField.getText());
-//            }
          }
          else
          {

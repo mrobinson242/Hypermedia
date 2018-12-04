@@ -17,6 +17,7 @@
    textColor: silverChalice;
 }
 
+/** CSS for Labels in Application */
 .label
 {
    -fx-text-fill: textColor;
@@ -86,19 +87,20 @@
    -fx-background-color: tundora;
 }
 
+/** CSS for Vertical Scroll Bar Thumb */
 .scroll-bar:vertical .thumb
 {
    -fx-background-color: boulder;
    -fx-background-radius: 10 10 10 10;
 }
 
+/** CSS for Vertical Scroll Bar Buttons Hover */
 .scroll-bar:vertical .increment-button:hover,
 .scroll-bar:vertical .decrement-button:hover
 {
    -fx-opacity: 0.5;
    -fx-background-color: silverChalice;
 }
-
 
 /** CSS for Tab Bar Pane */
 .tabPane
@@ -161,37 +163,76 @@
    -fx-text-fill: textColor
 }
 
+/** CSS for Select Link Table View */
 .selectLinkView
 {
    -fx-background-color: tundora;
    -fx-border-color:  silverChalice silverChalice silverChalice silverChalice;
 }
 
+/** CSS for Select Link Table View Odd Cells */
 .selectLinkView .list-cell:odd
 {
    -fx-text-fill: textColor;
 }
 
+/** CSS for Select Link Table View Even Cells */
 .selectLinkView .list-cell:even
 {
    -fx-text-fill: textColor;
    -fx-background-color: mineShaft;
 }
 
+/** CSS for Select Link Table View Selected Cells */
 .selectLinkView .list-cell:filled:selected
 {
    -fx-border-color: dodgerBlue dodgerBlue dodgerBlue dodgerBlue;
 }
 
+/** CSS for Select Link Table View Odd Cells */
 .list-cell:odd
 {
    -fx-background-color: tundora;
 }
 
+/** CSS for Select Link Table View Even Cells */
 .list-cell:even
 {
    -fx-background-color: tundora;
 }
+
+/** CSS for Text Field Table Cell Text */
+.text-input
+{
+   -fx-text-fill: textColor;
+}
+
+/** CSS for Text Field Table Cell */
+TextFieldTableCell >*
+{
+   -fx-background-color: tundora;
+   -fx-border-color: yellow;
+}
+
+/** CSS for Focused Text Field Table Cell */
+TextFieldTableCell > *:focused
+{
+   -fx-background-color: tundora;
+   -fx-border-color: yellow;
+   -fx-text-color: textColor;
+}
+
+TextFieldTableCell .textfield .label
+{
+   -fx-text-color: textColor;
+}
+
+
+.table-row-cell:selected
+{ 
+   -fx-text-color: textColor;
+}
+
 
 /** CSS for Progress Bar */
 .videoProgressBar .track

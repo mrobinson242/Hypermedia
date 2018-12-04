@@ -33,6 +33,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
@@ -40,14 +41,13 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.converter.IntegerStringConverter;
 import util.PolygonUtil;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import java.io.FileWriter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -283,6 +283,11 @@ public class VideoToolController extends AbstractController
       _linkNameColumn.setCellValueFactory(new PropertyValueFactory<Link, String>("linkName"));
       _startFrameColumn.setCellValueFactory(new PropertyValueFactory<Link, Integer>("startFrame"));
       _endFrameColumn.setCellValueFactory(new PropertyValueFactory<Link, Integer>("endFrame"));
+
+      // Handle Editing in the Table
+      handleLinkNameEditing();
+      handleStartFrameEditing();
+      handleEndFrameEditing();
 
       // Link Selection Table View Listeners
       handleLinkSelectionTable();
@@ -767,9 +772,6 @@ public class VideoToolController extends AbstractController
                   // Default to not inside polygon
                   isInsidePolygon = false;
                }
-
-               // TODO: Remove Debug Stmt
-               // System.out.println("Inside Polygon " + link.getLinkName() + ": " + isInsidePolygon);
             }
          }
       });
@@ -933,6 +935,197 @@ public class VideoToolController extends AbstractController
    }
 
    /**
+    * handleLinkNameEditing - Handles Editing of Link Name in Link Selection Table
+    */
+   private void handleLinkNameEditing()
+   {
+      // Link Name Column Editing
+      _linkNameColumn.setEditable(true);
+      _linkNameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+      _linkNameColumn.setOnEditCommit(event ->
+      {
+         // Get the new link name
+         String newLinkName = event.getNewValue();
+         String oldLinkName = event.getOldValue();
+
+         // Verify that the Link Name is Unique
+         if(verifyUniqueLink(newLinkName.trim()))
+         {
+            // Update Link Name
+            _linkTableView.getItems().get(event.getTablePosition().getRow()).setLinkName(newLinkName);
+         }
+         else
+         {
+            // Revert Link Name to Old name
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setLinkName(oldLinkName);
+
+            // Force Refresh of Table View
+            _linkTableView.getColumns().get(0).setVisible(false);
+            _linkTableView.getColumns().get(0).setVisible(true);
+
+            // Display the Error Dialog
+            displayErrorDialog("A Link with this name already exists");
+         }
+      });
+   }
+
+   /**
+    * handleStartFrameEditing - Handles Editing of Start Frame Name in Link Selection Table
+    */
+   private void handleStartFrameEditing()
+   {
+      // Initialize Number String Converter
+      IntegerStringConverter converter = new IntegerStringConverter()
+      {
+         @Override
+         public Integer fromString(String value)
+         {
+            try
+            {
+               // Update Start Frame
+               int startFrame = Integer.parseInt(value);
+               return startFrame;
+            }
+            catch(NumberFormatException e)
+            {
+               return Integer.MAX_VALUE;
+            }
+         }
+      };
+
+      // Link Name Column Editing
+      _startFrameColumn.setEditable(true);
+      _startFrameColumn.setCellFactory(TextFieldTableCell.forTableColumn(converter));
+      _startFrameColumn.setOnEditCommit(event ->
+      {
+         // Get the Start Frame
+         int newStartFrame = event.getNewValue();
+         int oldStartFrame = event.getOldValue();
+
+         // Get the Current End Frame
+         int currentEndFrame = event.getTableView().getItems().get(event.getTablePosition().getRow()).getEndFrame();
+
+         // Check if Invalid Case
+         if(newStartFrame == Integer.MAX_VALUE)
+         {
+            // Revert Link Name to Old Start Frame
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setStartFrame(oldStartFrame);
+
+            // Force Refresh of Table View
+            _linkTableView.getColumns().get(0).setVisible(false);
+            _linkTableView.getColumns().get(0).setVisible(true);
+
+            // Display the Error Dialog
+            displayErrorDialog("Invalid Entry for a Start Frame");
+         }
+         else if(newStartFrame > currentEndFrame)
+         {
+            // Revert Start Frame to Old Start Frame
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setStartFrame(oldStartFrame);
+
+            // Force Refresh of Table View
+            _linkTableView.getColumns().get(0).setVisible(false);
+            _linkTableView.getColumns().get(0).setVisible(true);
+
+            // Display the Error Dialog
+            displayErrorDialog("Start Frame can't be greater than End Frame");
+         }
+         else
+         {
+            // Update to New Start Frame
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setStartFrame(newStartFrame);
+
+            // Get Link in Table
+            Link link = event.getRowValue();
+
+            // Update Bounding Group
+            link.updateStartFrameBoundingGroup(oldStartFrame);
+
+            // Update the Links
+            displayLinks(_currentPrimaryFrame);
+         }
+      });
+   }
+
+   /**
+    * handleEndFrameEditing - Handles Editing of End Frame Name in Link Selection Table
+    */
+   private void handleEndFrameEditing()
+   {
+      // Initialize Number String Converter
+      IntegerStringConverter converter = new IntegerStringConverter()
+      {
+         @Override
+         public Integer fromString(String value)
+         {
+            try
+            {
+               // Update Start Frame
+               int startFrame = Integer.parseInt(value);
+               return startFrame;
+            }
+            catch(NumberFormatException e)
+            {
+               return Integer.MAX_VALUE;
+            }
+         }
+      };
+
+      // Link Name Column Editing
+      _endFrameColumn.setEditable(true);
+      _endFrameColumn.setCellFactory(TextFieldTableCell.forTableColumn(converter));
+      _endFrameColumn.setOnEditCommit(event ->
+      {
+         // Get the End Frame Values
+         int newEndFrame = event.getNewValue();
+         int oldEndFrame = event.getOldValue();
+
+         // Get the Current Start Frame
+         int currentStartFrame = event.getTableView().getItems().get(event.getTablePosition().getRow()).getStartFrame();
+
+         // Check if Invalid Case
+         if(newEndFrame == Integer.MAX_VALUE)
+         {
+            // Revert Link Name to Old Start Frame
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setEndFrame(oldEndFrame);
+
+            // Force Refresh of Table View
+            _linkTableView.getColumns().get(0).setVisible(false);
+            _linkTableView.getColumns().get(0).setVisible(true);
+
+            // Display the Error Dialog
+            displayErrorDialog("Invalid Entry for an End Frame");
+         }
+         else if(newEndFrame < currentStartFrame)
+         {
+            // Revert Start Frame to Old Start Frame
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setEndFrame(oldEndFrame);
+
+            // Force Refresh of Table View
+            _linkTableView.getColumns().get(0).setVisible(false);
+            _linkTableView.getColumns().get(0).setVisible(true);
+
+            // Display the Error Dialog
+            displayErrorDialog("End Frame can't be less than Start Frame");
+         }
+         else
+         {
+            // Update to New Start Frame
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setEndFrame(newEndFrame);
+
+            // Get Link in Table
+            Link link = event.getRowValue();
+
+            // Update Bounding Group
+            link.updateEndFrameBoundingGroup(oldEndFrame);
+
+            // Update the Links
+            displayLinks(_currentPrimaryFrame);
+         }
+      });
+   }
+
+   /**
     * updatePrimarySlider - Updates the Primary Slider based
     *                       on the Primary Video
     */
@@ -1037,9 +1230,6 @@ public class VideoToolController extends AbstractController
       }
       try 
       {
-         // TODO: Remove Debug Statement
-         System.out.println("Current Hyperlink File: " + _currentHyperlinkFile.getName());
-
          // Create new File
          _currentHyperlinkFile.createNewFile();
 
@@ -1058,9 +1248,6 @@ public class VideoToolController extends AbstractController
 
          // Write out Data to File
          f.write(prettyJsonString);
-
-         // Log File Write Success
-         System.out.println("Success");
 
          // Cleanup File Writer
          f.flush();
