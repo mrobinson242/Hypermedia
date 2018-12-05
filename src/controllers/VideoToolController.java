@@ -532,6 +532,12 @@ public class VideoToolController extends AbstractController
             _saveButton.setDisable(false);
             _homePageController.setSaveState(true);
          }
+         else
+         {
+            // Disable Save Button
+            _saveButton.setDisable(true);
+            _homePageController.setSaveState(false);
+         }
       }
    }
 
