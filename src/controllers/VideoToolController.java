@@ -19,7 +19,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.css.PseudoClass;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -34,7 +33,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -43,7 +41,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.converter.IntegerStringConverter;
 import util.PolygonUtil;
-import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
@@ -311,6 +308,10 @@ public class VideoToolController extends AbstractController
       _primaryVideo = primaryVideo;
       _primaryVideoView.setVisible(true);
 
+      // Disable Save Button
+      _saveButton.setDisable(true);
+      _homePageController.setSaveState(false);
+
       try 
       {
          // Initialize Media
@@ -470,10 +471,14 @@ public class VideoToolController extends AbstractController
       // Select the newly created link
       _linkTableView.getSelectionModel().select(link);
 
+      // Enable Save Button
+      _saveButton.setDisable(false);
+      _homePageController.setSaveState(true);
+
       // Display Links
       displayLinks(_currentPrimaryFrame);
    }
-   
+
    /**
     * deleteHyperlink - Deletes a Hyperlink
     */
@@ -505,6 +510,10 @@ public class VideoToolController extends AbstractController
          // Disable Delete Link Button
          _deleteLinkButton.setDisable(true);
          _homePageController.setDeleteLinkState(false);
+
+         // Enable Save Button
+         _saveButton.setDisable(false);
+         _homePageController.setSaveState(true);
       }
    }
 
@@ -544,9 +553,6 @@ public class VideoToolController extends AbstractController
        // Update the Current Hyperlink File
        _currentHyperlinkFile = file;
 
-       // Allow Saving
-       _saveButton.setDisable(false);
-
        // Check to see if Link Data is Empty
        if(!linkData.isEmpty())
        {
@@ -570,6 +576,10 @@ public class VideoToolController extends AbstractController
     */
    public void saveDataToFile(final File file)
    {
+      // Disable Save Button
+      _saveButton.setDisable(true);
+      _homePageController.setSaveState(false);
+
       // Write Data to Hyperlink File
       writeDataToFile();
    }
@@ -912,6 +922,10 @@ public class VideoToolController extends AbstractController
          {
             // Update Link Name
             _linkTableView.getItems().get(event.getTablePosition().getRow()).setLinkName(newLinkName);
+
+            // Enable Save Button
+            _saveButton.setDisable(false);
+            _homePageController.setSaveState(true);
          }
          else
          {
@@ -1000,6 +1014,10 @@ public class VideoToolController extends AbstractController
             // Update Bounding Group
             link.updateStartFrameBoundingGroup(oldStartFrame);
 
+            // Enable Save Button
+            _saveButton.setDisable(false);
+            _homePageController.setSaveState(true);
+
             // Update the Links
             displayLinks(_currentPrimaryFrame);
          }
@@ -1077,6 +1095,10 @@ public class VideoToolController extends AbstractController
 
             // Update Bounding Group
             link.updateEndFrameBoundingGroup(oldEndFrame);
+
+            // Enable Save Button
+            _saveButton.setDisable(false);
+            _homePageController.setSaveState(true);
 
             // Update the Links
             displayLinks(_currentPrimaryFrame);

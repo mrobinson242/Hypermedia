@@ -243,6 +243,17 @@ public class HomePageController extends AbstractController
    }
 
    /**
+    * setSaveState - Sets the Save Button State
+    *
+    * @param isEnabled
+    */
+   public void setSaveState(final boolean isEnabled)
+   {
+      // Update the Save Menu Item State
+      _saveMenuItem.setDisable(!isEnabled);
+   }
+
+   /**
     * importPrimaryVideo - Opens up a File Chooser Dialog
     *                      to select the Primary Video
     */
