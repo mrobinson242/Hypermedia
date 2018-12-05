@@ -91,7 +91,7 @@ public class VideoPlayerController extends AbstractController
 
    /** The Start Frame of the Videos */
    private static final int MIN_FRAME = 1;
-   
+
    /** Video Scale Factor */
    private static final double VIDEO_SCALE_FACTOR = 1.5;
 
@@ -335,8 +335,17 @@ public class VideoPlayerController extends AbstractController
       // Disable the Pause Button
       _pauseButton.setDisable(true);
 
-      // Enable the Play Button
-      _playButton.setDisable(false);
+      // Check if Final Frame
+      if(_currentFrame == (int)Math.round(_videoSlider.getMax()))
+      {
+         // Disable the Play Button
+         _playButton.setDisable(true);
+      }
+      else
+      {
+         // Enable the Play Button
+         _playButton.setDisable(false);
+      }
 
       // Give Focus to Video Slider
       _videoSlider.requestFocus();
@@ -441,22 +450,21 @@ public class VideoPlayerController extends AbstractController
                   // Default Current Frame Min to 1
                   _currentFrame = 1;
                }
-
                // Check if Current Frame is Greater than initial frame
-               if(_currentFrame > 1)
+               else if(_currentFrame > 1)
                {
                   // Enable Stop Button
                   _stopButton.setDisable(false);
                }
+
+               // Update the Progress Bar
+               final double maxVal = _videoSlider.getMax();
 
                // Update Frame Number Label
                _videoFrameNumLabel.setText(String.valueOf(_currentFrame));
 
                // Get the Current Frame Time (Seconds)
                final double frameTime = (newVal.doubleValue()/FPS) * 1000;
-
-               // Update the Progress Bar
-               final double maxVal = _videoSlider.getMax();
 
                // Update Progress of Slider
                _videoProgressBar.setProgress(newVal.doubleValue()/maxVal);
@@ -479,14 +487,32 @@ public class VideoPlayerController extends AbstractController
       // Mouse Release Listener
       _videoSlider.setOnMouseReleased(event ->
       {
-         // Check if in Play Mode
-         if(_playButton.isDisable())
+         // Check if in Play Mode and Pause Button is not Disabled
+         if(_playButton.isDisable() && !_pauseButton.isDisable())
          {
+            // Play the Video
             _mediaPlayer.play();
+         }
+
+         // Check if Play Button is Disabled and Paused Button is Disabled
+         if(_playButton.isDisable() && _pauseButton.isDisable())
+         {
+            // Disable the Play Button
+            _playButton.setDisable(false);
+         }
+
+         // Check if Final Frame
+         if(_currentFrame == (int)Math.round(_videoSlider.getMax()))
+         {
+            // Pause The Video
+            pauseVideo();
+
+            // Disable the Play Button
+            _playButton.setDisable(true);
          }
       });
    }
-   
+
    /**
     * handlePlayButton - Listener for the Play Button Selection
     */
