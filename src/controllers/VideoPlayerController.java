@@ -406,6 +406,13 @@ public class VideoPlayerController extends AbstractController
                   // Update the Progress Bar
                   final double maxVal = _videoSlider.getMax();
                   _videoProgressBar.setProgress(_currentFrame/maxVal);
+
+                  // Check if End of the Video
+                  final int theEnd = (int) Math.round(maxVal);
+                  if(_currentFrame == theEnd)
+                  {
+                     pauseVideo();
+                  }
                }
             }
          });
