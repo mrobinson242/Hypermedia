@@ -183,111 +183,6 @@ public class VideoPlayerController extends AbstractController
    }
 
    /**
-    * handlePlayButton - Listener for the Play Button Selection
-    */
-   private void handlePlayButton()
-   {
-      // Process Click of Play Button
-      _playButton.setOnAction(event ->
-      {
-         // Play The Video
-         _mediaPlayer.play();
-
-         // Update Video Frame Label
-         _videoFrameLabel.setText("Playing Frame ");
-
-         // Disable the Play Button
-         _playButton.setDisable(true);
-
-         // Enable the Pause Button
-         _pauseButton.setDisable(false);
-         _stopButton.setDisable(false);
-      });
-   }
-
-   /**
-    * handlePauseButton - Listener for the Pause Button Selection
-    */
-   private void handlePauseButton()
-   {
-      // Process Click of Pause Button
-      _pauseButton.setOnAction(event ->
-      {
-         // Pause The Video
-         _mediaPlayer.pause();
-
-         // Update Video Frame Label
-         _videoFrameLabel.setText("Paused Frame ");
-
-         // Disable the Pause Button
-         _pauseButton.setDisable(true);
-
-         // Enable the Play Button
-         _playButton.setDisable(false);
-
-         // Give Focus to Video Slider
-         _videoSlider.requestFocus();
-      });
-   }
-
-   /**
-    * handleStopButton - Listener for the Stop Button Selection
-    */
-   private void handleStopButton()
-   {
-      // Process Click of Stop Button
-      _stopButton.setOnAction(event ->
-      {
-         // Disable Stop/Pause Button
-         _pauseButton.setDisable(true);
-         _stopButton.setDisable(true);
-
-         // OffLoad to Display Thread
-         Platform.runLater(()->
-         {
-            // Stop Media Player
-            _mediaPlayer.pause();
-
-            // Reset to Start of Video
-            _mediaPlayer.seek(new Duration(0.0));
-
-            // Update Slider/Progress to Start of Video
-            _videoSlider.setValue(0.0);
-            _videoProgressBar.setProgress(0.0);
-
-            // Update Video Frame Label
-            _videoFrameLabel.setText("Paused Frame ");
-            _videoFrameNumLabel.setText("1");
-
-            // Update Current Frame
-            _currentFrame = 1;
-
-            // Display Links associated with Current Frame
-            displayLinks(_currentFrame, _linksVisible);
-
-            // Enable the Play Button
-            _playButton.setDisable(false);
-
-            // Give Focus to Video Slider
-            _videoSlider.requestFocus();
-         });
-      });
-   }
-
-   /**
-    * handleOpenVideoButton - Listener for the Open Video Button Selection
-    */
-   private void handleOpenVideoButton()
-   {
-      // Process Click of Open Video Button
-      _openVideoButton.setOnAction(event ->
-      {
-         // Get the Hyperlink Video File from the File Chooser
-         _homePageController.openHyperlinkFile();
-      });
-   }
-
-   /**
     * addKeyboardListener - Adds a Keyboard Event Listener
     */
    public void addKeyboardListener()
@@ -427,6 +322,27 @@ public class VideoPlayerController extends AbstractController
    }
 
    /**
+    * pauseVideo - Pauses the Video
+    */
+   private void pauseVideo()
+   {
+      // Pause The Video
+      _mediaPlayer.pause();
+
+      // Update Video Frame Label
+      _videoFrameLabel.setText("Paused Frame ");
+
+      // Disable the Pause Button
+      _pauseButton.setDisable(true);
+
+      // Enable the Play Button
+      _playButton.setDisable(false);
+
+      // Give Focus to Video Slider
+      _videoSlider.requestFocus();
+   }
+
+   /**
     * updateSlider - Updates the Primary Slider based
     *                       on the Primary Video
     */
@@ -439,7 +355,7 @@ public class VideoPlayerController extends AbstractController
       // Get Number of Frames
       Duration duration = _mediaPlayer.getTotalDuration();
       int totalSeconds = (int) Math.round(duration.toSeconds());
-      int totalFrames = totalSeconds * 30;
+      int totalFrames = totalSeconds * FPS;
 
       // Set Slider Properties
       _videoSlider.setMin(MIN_FRAME);
@@ -459,41 +375,37 @@ public class VideoPlayerController extends AbstractController
       if(_mediaPlayer != null) 
       {
          // Media Player Time Listener
-         _mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>()
+         _mediaPlayer.currentTimeProperty().addListener((observableValue , oldTime, newTime) ->
          {
-            @Override
-            public void changed(ObservableValue<? extends Duration> ov, Duration oldTime, Duration newTime)
+            // Null Check Primary Video and video is playing
+            if(_video != null && !_pauseButton.isDisable())
             {
-               // Null Check Primary Video and video is playing
-               if(_video != null && !_pauseButton.isDisable())
+               // Display Links associated with Current Frame
+               displayLinks(_currentFrame, _linksVisible);
+
+               // Update the Current Frame
+               int timeElapsed = (int) Math.round(newTime.toSeconds());
+               _currentFrame = timeElapsed * FPS;
+
+               // Check if Current Frame Value is 0
+               if(_currentFrame == 0)
                {
-                  // Update Current Primary Frame
-                  double frameTime = (newTime.toSeconds()/FPS) * 1000;
-                  _currentFrame = (int) Math.round(frameTime);
+                  // Default Current Frame Min to 1
+                  _currentFrame = 1;
+               }
 
-                  // Check if Current Frame Value is 0
-                  if(_currentFrame == 0)
-                  {
-                     // Default Current Frame Min to 1
-                     _currentFrame = 1;
-                  }
+               // Update Frame Num Label
+               _videoFrameNumLabel.setText(String.valueOf(_currentFrame));
 
-                  // Update Frame Num Label
-                  _videoFrameNumLabel.setText(String.valueOf(_currentFrame));
+               // Only Update if Video Slider is not being Pressed
+               if(!_videoSlider.isPressed())
+               {
+                  // Update the Slider
+                  _videoSlider.setValue(_currentFrame);
 
-                  // Only Update if Video Slider is not being Pressed
-                  if(!_videoSlider.isPressed())
-                  {
-                     // Update the Slider
-                     _videoSlider.setValue(frameTime);
-
-                     // Update the Progress Bar
-                     final double maxVal = _videoSlider.getMax();
-                     _videoProgressBar.setProgress(frameTime/maxVal);
-                  }
-
-                  // Display Links associated with Current Frame
-                  displayLinks(_currentFrame, _linksVisible);
+                  // Update the Progress Bar
+                  final double maxVal = _videoSlider.getMax();
+                  _videoProgressBar.setProgress(_currentFrame/maxVal);
                }
             }
          });
@@ -567,6 +479,106 @@ public class VideoPlayerController extends AbstractController
          }
       });
    }
+   
+   /**
+    * handlePlayButton - Listener for the Play Button Selection
+    */
+   private void handlePlayButton()
+   {
+      // Process Click of Play Button
+      _playButton.setOnAction(event ->
+      {
+         // Play The Video
+         _mediaPlayer.play();
+
+         // Update Video Frame Label
+         _videoFrameLabel.setText("Playing Frame ");
+
+         // Disable the Play Button
+         _playButton.setDisable(true);
+
+         // Enable the Pause Button
+         _pauseButton.setDisable(false);
+         _stopButton.setDisable(false);
+      });
+   }
+
+   /**
+    * handlePauseButton - Listener for the Pause Button Selection
+    */
+   private void handlePauseButton()
+   {
+      // Process Click of Pause Button
+      _pauseButton.setOnAction(event ->
+      {
+         // Pause the Video
+         pauseVideo();
+      });
+   }
+
+   /**
+    * handleStopButton - Listener for the Stop Button Selection
+    */
+   private void handleStopButton()
+   {
+      // Process Click of Stop Button
+      _stopButton.setOnAction(event ->
+      {
+         // Disable Stop/Pause Button
+         _pauseButton.setDisable(true);
+         _stopButton.setDisable(true);
+
+         // OffLoad to Display Thread
+         Platform.runLater(()->
+         {
+            // Stop Media Player
+            _mediaPlayer.pause();
+
+            // Reset to Start of Video
+            _mediaPlayer.seek(new Duration(0.0));
+
+            // Update Slider/Progress to Start of Video
+            _videoSlider.setValue(0.0);
+            _videoProgressBar.setProgress(0.0);
+
+            // Update Video Frame Label
+            _videoFrameLabel.setText("Paused Frame ");
+            _videoFrameNumLabel.setText("1");
+
+            // Update Current Frame
+            _currentFrame = 1;
+
+            // Display Links associated with Current Frame
+            displayLinks(_currentFrame, _linksVisible);
+
+            // Enable the Play Button
+            _playButton.setDisable(false);
+
+            // Give Focus to Video Slider
+            _videoSlider.requestFocus();
+         });
+      });
+   }
+
+   /**
+    * handleOpenVideoButton - Listener for the Open Video Button Selection
+    */
+   private void handleOpenVideoButton()
+   {
+      // Process Click of Open Video Button
+      _openVideoButton.setOnAction(event ->
+      {
+         // Check if Video is Playing
+         if(_playButton.isDisabled() && !_pauseButton.isDisabled() && !_stopButton.isDisabled())
+         {
+            // Pause the Current Video
+            pauseVideo();
+         }
+
+         // Get the Hyperlink Video File from the File Chooser
+         _homePageController.openHyperlinkFile();
+      });
+   }
 
    /**
     * displayLinks - Displays all the Links associated
@@ -628,17 +640,15 @@ public class VideoPlayerController extends AbstractController
             // Get Mouse Event
             Point mousePoint = new Point(mouseEvent.getX(), mouseEvent.getY());
 
-            int index = 0;
+            // Initialize Boolean Indicator
+            boolean isInsidePolygon = false;
 
-            // Indicate which link is being clicked if any
-            int isLink = -1;
+            // Create Selected Link
+            Link clickedLink = new Link("", 1, 1, 1);
 
             // Iterate over the Current Links
             for(Link link : _linkData)
             {
-               // Initialize Boolean Indicator
-               boolean isInsidePolygon;
-
                // Get List of Vertices
                final List<Point> vertices = link.getVertices(_currentFrame);
 
@@ -647,30 +657,19 @@ public class VideoPlayerController extends AbstractController
                {
                   // Check if Mouse Press is inside Polygon
                   isInsidePolygon = _polygonUtil.isInsidePolygon(mousePoint, link.getVertices(_currentFrame));
-               }
-               else
-               {
-                  // Default to not inside polygon
-                  isInsidePolygon = false;
-               }
 
-               // Check if Click is Inside Link's Polygon
-               if(isInsidePolygon)
-               {
-                  isLink = index;
+                  // Update Selected Link
+                  clickedLink = link;
+                  break;
                }
-
-               index += 1;
             }
 
-            // Based on a link that was clicked, import in the video that the link points to and corresponding hyperlink file
-            if (isLink >= 0) 
+            // Based on a link that was clicked, import in the video that the
+            // link points to and corresponding hyperlink file
+            if (isInsidePolygon) 
             {
                // Stop the Current Video
                _mediaPlayer.pause();
-
-               // Get the Selected Link
-               Link clickedLink = _linkData.get(isLink);
 
                // Get the To Video from the Selected Link
                _video = clickedLink.getToVideo();
