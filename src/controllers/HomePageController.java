@@ -36,9 +36,6 @@ public class HomePageController extends AbstractController
    private Pane _contentPane;
 
    @FXML
-   private MenuItem _newFileMenuItem;
-
-   @FXML
    private MenuItem _openFileMenuItem;
 
    @FXML
@@ -107,11 +104,10 @@ public class HomePageController extends AbstractController
    /** The Start Frame of the Videos */
    private static final int MIN_FRAME = 1;
 
-   /** Boolean Indicator if Create Link is Available */
+   /** Boolean Indicator if Menu Item is Available */
    private boolean _createLinkAvailable;
-
-   /** Boolean Indicator if Delete Link is Available */
    private boolean _deleteLinkAvailable;
+   private boolean _saveAvailable;
 
    /**
     * Constructor
@@ -138,6 +134,7 @@ public class HomePageController extends AbstractController
       // Default Menu Item Enabled/Disabled Indicators
       _createLinkAvailable = false;
       _deleteLinkAvailable = false;
+      _saveAvailable = false;
 
       // Disable Unavailable Video Tool Menu Items
       _createLinkMenuItem.setDisable(true);
@@ -169,13 +166,11 @@ public class HomePageController extends AbstractController
       importSecondaryVideoSelection();
       handleCreateLinkSelection();
       handleDeleteLinkSelection();
-      handleNewFileSelection();
       handleOpenFileSelection();
       handleSaveSelection();
       handleExitSelection();
 
       // Set File Menu Accelerators
-      _newFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
       _openFileMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
       _importPrimaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN));
       _importSecondaryVideoItem.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN));
@@ -221,6 +216,7 @@ public class HomePageController extends AbstractController
 
    /**
     * setDeleteLinkState - Updates the Enabled/Disabled State
+    *                      of the Delete Link Menu Item
     *
     * @param isEnabled - Is Menu Item Enabled
     */
@@ -243,14 +239,26 @@ public class HomePageController extends AbstractController
    }
 
    /**
-    * setSaveState - Sets the Save Button State
-    *
+    * setSaveState - Updates the Enabled/Disabled State
+    *                of the Save Menu Item
     * @param isEnabled
     */
    public void setSaveState(final boolean isEnabled)
    {
-      // Update the Save Menu Item State
-      _saveMenuItem.setDisable(!isEnabled);
+      // Update Save Availability State
+      _saveAvailable = isEnabled;
+
+      // Check that current tab is Hypermedia Tab
+      if(EHypermediaTab.VIDEO_TOOL.equals(_selectedTab))
+      {
+         // Update Enable/Disable State of Item
+         _saveMenuItem.setDisable(!isEnabled);
+      }
+      else
+      {
+         // Disable Create Link Menu Option
+         _saveMenuItem.setDisable(true);
+      }
    }
 
    /**
@@ -432,7 +440,7 @@ public class HomePageController extends AbstractController
          // Enable Menu Items
          setCreateLinkState(_createLinkAvailable);
          setDeleteLinkState(_deleteLinkAvailable);
-         _saveMenuItem.setDisable(false);
+         setSaveState(_saveAvailable);
       });
    }
 
@@ -529,19 +537,6 @@ public class HomePageController extends AbstractController
       {
          // Open up File Selector for Hyperlink File
          openHyperlinkFile();
-      });
-   }
-
-   /**
-    * handleNewFileSelection - Handles the Selection of the New
-    *                          File Menu Item
-    */
-   private void handleNewFileSelection()
-   {
-      // Process Selection of the New File Menu Item
-      _newFileMenuItem.setOnAction(event ->
-      {
-         // TODO: Implement
       });
    }
 

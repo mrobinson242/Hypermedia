@@ -312,6 +312,12 @@ public class VideoToolController extends AbstractController
       _saveButton.setDisable(true);
       _homePageController.setSaveState(false);
 
+      // Reset Sliders
+      _primaryVideoSlider.setValue(1.0);
+      _primaryVideoSlider.setDisable(true);
+      _secondaryVideoSlider.setValue(1.0);
+      _secondaryVideoSlider.setDisable(true);
+
       try 
       {
          // Initialize Media
@@ -884,8 +890,12 @@ public class VideoToolController extends AbstractController
                final double maxVal = _primaryVideoSlider.getMax();
                _primaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
 
-               // Update the Primary Video Media Player
-               _primaryMediaPlayer.seek(new Duration(frameTime));
+               // Null Check Primary Media Player
+               if(_primaryMediaPlayer != null)
+               {
+                  // Update the Primary Video Media Player
+                  _primaryMediaPlayer.seek(new Duration(frameTime));
+               }
 
                // Display Links associated with Current Frame
                displayLinks(_currentPrimaryFrame);
@@ -920,8 +930,12 @@ public class VideoToolController extends AbstractController
                final double maxVal = _secondaryVideoSlider.getMax();
                _secondaryVideoProgressBar.setProgress(newVal.doubleValue()/maxVal);
 
-               // Update the Primary Video Media Player
-               _secondaryMediaPlayer.seek(new Duration(frameTime));
+               // Null Check Secondary Media Player
+               if(_secondaryMediaPlayer != null)
+               {
+                  // Update the Primary Video Media Player
+                  _secondaryMediaPlayer.seek(new Duration(frameTime));
+               }
             }
          }
       });
