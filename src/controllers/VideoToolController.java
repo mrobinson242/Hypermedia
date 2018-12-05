@@ -348,6 +348,20 @@ public class VideoToolController extends AbstractController
 
                // Update Displayed Links
                displayLinks(_currentPrimaryFrame);
+
+               // Null Check Link Data
+               if(!_linkData.isEmpty())
+               {
+                  // Get First Link in the Table
+                  Link link = _linkData.get(0);
+
+                  // Null Check Link
+                  if(link != null)
+                  {
+                     // Select First Link in the Table
+                     _linkTableView.getSelectionModel().select(_linkData.get(0));
+                  }
+               }
             }
          });
       }
@@ -511,9 +525,13 @@ public class VideoToolController extends AbstractController
          _deleteLinkButton.setDisable(true);
          _homePageController.setDeleteLinkState(false);
 
-         // Enable Save Button
-         _saveButton.setDisable(false);
-         _homePageController.setSaveState(true);
+         // Need to have Link Data to Save
+         if(!_linkData.isEmpty())
+         {
+            // Enable Save Button
+            _saveButton.setDisable(false);
+            _homePageController.setSaveState(true);
+         }
       }
    }
 

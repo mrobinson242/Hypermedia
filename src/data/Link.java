@@ -527,8 +527,12 @@ public class Link
                // Null Check Old Box
                if(oldBox != null)
                {
+                  // Create new LinkBox for Map
+                  ArrayList<Double> points = new ArrayList<Double>(oldBox.getPoints());
+                  LinkBox box = new LinkBox(this, points);
+
                   // Add Bounding Box to Map
-                  _frameToBoxMap.put(i, oldBox);
+                  _frameToBoxMap.put(i, box);
                }
             }
          }
@@ -577,8 +581,12 @@ public class Link
                // Null Check Old Box
                if(oldBox != null)
                {
+                  // Create new LinkBox for Map
+                  ArrayList<Double> points = new ArrayList<Double>(oldBox.getPoints());
+                  LinkBox box = new LinkBox(this, points);
+
                   // Add Bounding Box to Map
-                  _frameToBoxMap.put(i, oldBox);
+                  _frameToBoxMap.put(i, box);
                }
             }
          }

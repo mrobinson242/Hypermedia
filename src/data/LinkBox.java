@@ -666,7 +666,7 @@ public class LinkBox
 
                   // Check if Anchor is within confines
                   // of Primary Video Pane (X Dimension)
-                  if (newX > 0 && newX < 352)
+                  if (newX > 0 && newX < WIDTH)
                   {
                      // Update X Position
                      setCenterX(newX);
@@ -674,7 +674,7 @@ public class LinkBox
 
                   // Check if Anchor is within confines
                   // of Primary Video Pane (Y Dimension)
-                  if (newY > 0 && newY < 288)
+                  if (newY > 0 && newY < HEIGHT)
                   {
                      // Update Y Position
                      setCenterY(newY);
