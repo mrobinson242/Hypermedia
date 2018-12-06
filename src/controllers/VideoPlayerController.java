@@ -224,7 +224,12 @@ public class VideoPlayerController extends AbstractController
       // Check that there is Link Data
       if(!linkData.isEmpty())
       {
+         // Update Link Data
          _linkData.setAll(linkData);
+
+         // Update Button States
+         _pauseButton.setDisable(true);
+         _stopButton.setDisable(true);
 
          // Update the Vertices for the Video Player
          for(Link link : _linkData)
@@ -260,6 +265,7 @@ public class VideoPlayerController extends AbstractController
 
       // Update Button States
       _playButton.setDisable(false);
+      _pauseButton.setDisable(true);
 
       // Show Video Frame Labels
       _hyperlinkFilename.setText(FilenameUtils.getBaseName(primaryVideo.getName()));
@@ -449,6 +455,14 @@ public class VideoPlayerController extends AbstractController
                {
                   // Default Current Frame Min to 1
                   _currentFrame = 1;
+
+                  // Disable Stop Button
+                  _stopButton.setDisable(true);
+               }
+               else if(_currentFrame == 1)
+               {
+                  // Disable Stop Button
+                  _stopButton.setDisable(true);
                }
                // Check if Current Frame is Greater than initial frame
                else if(_currentFrame > 1)
