@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import controllers.VideoToolController;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Group;
@@ -43,6 +44,9 @@ public class Link
 
    /** Mapping of Frames to Bounding Box */
    private Map<Integer, LinkBox> _frameToBoxMap;
+
+   /** The Video Tool Controller */
+   private VideoToolController _videoToolController;
 
    /**
     * Constructor
@@ -188,6 +192,13 @@ public class Link
                fY += dy;
             }
          }
+      }
+
+      // Null Check Video Tool Controller
+      if(_videoToolController != null)
+      {
+         // Allow File to be Saved
+         _videoToolController.updateSaveButton(true);
       }
    }
 
@@ -384,6 +395,16 @@ public class Link
    public void setToFrame(final int toFrame)
    {
       _toFrame = toFrame;
+   }
+
+   /**
+    * setVideoToolController - Sets the Video Tool Controller
+    *
+    * @param controller
+    */
+   public void setVideoToolController(final VideoToolController controller)
+   {
+      _videoToolController = controller;
    }
 
    /**

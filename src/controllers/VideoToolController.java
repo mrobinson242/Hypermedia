@@ -484,6 +484,7 @@ public class VideoToolController extends AbstractController
       link.setFromVideo(_primaryVideo);
       link.setToVideo(_secondaryVideo);
       link.setToFrame(_currentSecondaryFrame);
+      link.setVideoToolController(this);
 
       // Add Link to Observable List of Link Data
       _linkData.add(link);
@@ -633,6 +634,18 @@ public class VideoToolController extends AbstractController
    {
       // Show the Link Creation Dialog
       _linkCreationDialog.showDialog();
+   }
+
+   /**
+    * updateSaveButton - Updates the Selected State of the Save Button
+    *
+    * @param isSelectable
+    */
+   public void updateSaveButton(final boolean isSelectable)
+   {
+      // Update Save Button State
+      _saveButton.setDisable(!isSelectable);
+      _homePageController.setSaveState(isSelectable);
    }
 
    /**

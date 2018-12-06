@@ -698,9 +698,11 @@ public class HomePageController extends AbstractController
 
                framePoints.put(Integer.parseInt(frame), pList);
             }
+
             // Reconstruct links given the information retrieved from the file and add them to the list data structure.
-            Link now = new Link(name, startFrame, endFrame, startFrame, fromVideo, toVideo, toFrame, framePoints);
-            linkData.add(now);
+            Link link = new Link(name, startFrame, endFrame, startFrame, fromVideo, toVideo, toFrame, framePoints);
+            link.setVideoToolController(_videoToolController);
+            linkData.add(link);
          }
       } 
       catch (FileNotFoundException e)
@@ -718,6 +720,7 @@ public class HomePageController extends AbstractController
          // Log Error
          e.printStackTrace();
       }
+
       // Return a list of all the links that hve been constructed.
       return linkData;
    }
